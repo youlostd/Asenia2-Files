@@ -1,0 +1,71 @@
+ScriptType            RaceDataScript
+
+BaseModelFileName     "D:\Ymir Work\npc2\dl2_alchemist\dl2_alchemist.GR2"
+
+Group ShapeData
+{
+	PathName	"D:\Ymir Work\npc2\dl2_alchemist\"
+	ShapeDataCount	3
+
+	Group ShapeData00
+	{
+		ShapeIndex	0
+		Model	"dl2_alchemist.GR2"
+		SourceSkin	"T_GuaiLaoTou_a.dds"
+		TargetSkin	"T_GuaiLaoTou_a.dds"
+	}
+	Group ShapeData01
+	{
+		ShapeIndex	0
+		Model	"dl2_alchemist.GR2"
+		SourceSkin	"T_GuaiLaoTou_b.dds"
+		TargetSkin	"T_GuaiLaoTou_b.dds"
+	}
+	Group ShapeData02
+	{
+		ShapeIndex	0
+		Model	"dl2_alchemist.GR2"
+		SourceSkin	"T_GuaiLaoTou_c.dds"
+		TargetSkin	"T_GuaiLaoTou_c.dds"
+	}
+}
+Group AttachingData
+{
+    AttachingDataCount       2
+    
+    Group AttachingData00
+    {
+        AttachingDataType    1
+        
+        isAttaching          0
+        AttachingModelIndex  0
+        AttachingBoneName    "Box01"
+        
+        CollisionType        1
+        
+        SphereDataCount      1
+        Group SphereData00
+        {
+            Radius           60.000000
+            Position         0.000000 0.000000 50.000000
+        }
+    }
+    
+    Group AttachingData01
+    {
+        AttachingDataType    1
+        
+        isAttaching          1
+        AttachingModelIndex  0
+        AttachingBoneName    "ore"
+        
+        CollisionType        3
+        
+        SphereDataCount      1
+        Group SphereData00
+        {
+            Radius           70.000000
+            Position         0.000000 0.000000 50.000000
+        }
+    }
+}

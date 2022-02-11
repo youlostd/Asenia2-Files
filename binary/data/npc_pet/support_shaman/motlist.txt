@@ -1,0 +1,6 @@
+GENERAL WAIT bekle1.msa 70
+GENERAL WAIT1 bekle2.msa 28
+GENERAL WAIT2 bekle2.msa 2
+GENERAL RUN kosma.msa 100
+GENERAL WALK yurume.msa 100
+
