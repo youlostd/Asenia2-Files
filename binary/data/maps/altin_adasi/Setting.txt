@@ -1,0 +1,12 @@
+ScriptType	MapSetting
+
+CellScale	200
+HeightScale	0.500000
+
+ViewRadius	128
+
+MapSize	3	3
+BasePosition	35585900	38585900
+TextureSet	textureset\Asenis_Dusza_light.txt
+Environment	Asenis_Dusza_light.msenv
+

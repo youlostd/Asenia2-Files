@@ -1,0 +1,12 @@
+ScriptType	MapSetting
+
+CellScale	200
+HeightScale	0.500000
+
+ViewRadius	128
+
+MapSize	2	2
+BasePosition	2099200	3532800
+TextureSet	textureset\plechi_greendragon_map.txt
+Environment	greendragon_valley.msenv
+

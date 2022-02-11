@@ -1,0 +1,12 @@
+ScriptType	MapSetting
+
+CellScale	200
+HeightScale	0.500000
+
+ViewRadius	128
+
+MapSize	2	2
+BasePosition	2002500	2002600
+TextureSet	textureset\duratus_entrance_map.txt
+Environment	duratus_entrance.msenv
+

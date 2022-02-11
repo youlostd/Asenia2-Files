@@ -1,0 +1,12 @@
+ScriptType	MapSetting
+
+CellScale	200
+HeightScale	0.500000
+
+ViewRadius	128
+
+MapSize	3	3
+BasePosition	4857700	4757700
+TextureSet	textureset\plant_dungeon.txt
+Environment	plant_dungeon.msenv
+

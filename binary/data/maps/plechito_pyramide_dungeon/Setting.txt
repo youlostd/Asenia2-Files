@@ -1,0 +1,12 @@
+ScriptType	MapSetting
+
+CellScale	200
+HeightScale	0.500000
+
+ViewRadius	128
+
+MapSize	5	5
+BasePosition	11155800	9896400
+TextureSet	textureset\plechito_pyramide_dungeon.txt
+Environment	a2.msenv
+

@@ -1,0 +1,12 @@
+ScriptType	MapSetting
+
+CellScale	200
+HeightScale	0.500000
+
+ViewRadius	128
+
+MapSize	3	3
+BasePosition	27129500	27129500
+TextureSet	textureset\laselfow.txt
+Environment	moonlight04.msenv
+
