@@ -1,0 +1,64 @@
+ScriptType               MotionData
+
+MotionFileName           "D:\ymir work\monster2\plechito_halloween2020\plechito_halloween2020_mainboss\skil00.GR2"
+MotionDuration           3.000000
+
+Group MotionEventData
+{
+    MotionEventDataCount     4
+     Group Event00
+    {
+        MotionEventType      1
+        StartingTime         0.565571
+        
+        IndependentFlag      0
+        AttachingEnable      0
+        AttachingBoneName    "Bip01"
+        FollowingEnable      0
+        EffectFileName       "d:/ymir work/effect/plechito/monster/h2020_m_boss_skill01a.mse"
+        EffectPosition       0.000000 0.000000 0.000000
+    }
+     Group Event01
+    {
+        MotionEventType      1
+        StartingTime         1.675571
+        
+        IndependentFlag      0
+        AttachingEnable      0
+        AttachingBoneName    "Bip01"
+        FollowingEnable      0
+        EffectFileName       "d:/ymir work/effect/plechito/monster/h2020_m_boss_skill01b.mse"
+        EffectPosition       0.000000 -300.000000 0.000000
+    }
+    Group Event02
+    {
+        MotionEventType      2
+        StartingTime         1.675571
+        
+        DuringTime           0.200000
+        Power                100
+        AffectingRange       900
+    }
+    Group Event03
+    {
+        MotionEventType      4
+        StartingTime         1.675571
+        DuringTime           0.9857452
+        EnableHitProcess     0
+        
+        AttackType           0
+        HittingType          2
+        StiffenTime          0.000000
+        InvisibleTime        0.300000
+        ExternalForce        0.000000
+        HitLimitCount        3
+        CollisionType        4
+        
+        SphereDataCount      1
+        Group SphereData00
+        {
+            Radius           750.000000
+            Position         0.000000 -300.000000 0.000000
+        }
+    }
+}

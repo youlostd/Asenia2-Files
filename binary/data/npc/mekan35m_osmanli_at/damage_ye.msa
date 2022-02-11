@@ -1,0 +1,6 @@
+ScriptType               MotionData
+NoEffectCheck 1
+
+MotionFileName           "D:\ymir work\npc\mekan35m_osmanli_at\damage_ye.GR2"
+MotionDuration           0.833333
+

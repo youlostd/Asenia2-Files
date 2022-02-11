@@ -1,0 +1,18 @@
+ScriptType            RaceDataScript
+
+BaseModelFileName     "D:\Ymir Work\npc\Veresthia_Mount_3\Veresthia_Mount_3.gr2"
+
+Group ShapeData
+{
+    PathName 		 "d:/ymir work/npc/Veresthia_Mount_3/"
+    ShapeDataCount 		 1
+	Group ShapeData00
+	Specular            100		
+	{
+		ShapeIndex			0
+
+		Model				"Veresthia_Mount_3.gr2"
+		SourceSkin			"Veresthia_Mount_3.tga"
+		TargetSkin			"Veresthia_Mount_3.tga"		
+	}
+}

@@ -1,0 +1,70 @@
+ScriptType            RaceDataScript
+
+BaseModelFileName     "d:/ymir work/npc/dl2_forrestnpc/dl2_forrestnpc.gr2"
+
+Group ShapeData
+{
+	PathName	"d:/ymir work/npc/dl2_forrestnpc/"
+	ShapeDataCount	1
+
+	Group ShapeData00
+	{
+		ShapeIndex	0
+		Model	"dl2_forrestnpc.GR2"
+		SourceSkin	"CH_NPC_MOB_Dryad_A01_D_CRS.dds"
+		TargetSkin	"CH_NPC_MOB_Dryad_A01_D_CRS.dds"
+	}
+}
+Group AttachingData
+{
+    AttachingDataCount       2
+    
+    Group AttachingData00
+    {
+        AttachingDataType    1
+        
+        isAttaching          1
+        AttachingModelIndex  0
+        AttachingBoneName    "Bip01"
+        
+        CollisionType        1
+        
+        SphereDataCount      1
+        Group SphereData00
+        {
+            Radius           23.000000
+            Position         0.000000 0.000000 0.000000
+        }
+    }
+    
+    Group AttachingData01
+    {
+        AttachingDataType    1
+        
+        isAttaching          1
+        AttachingModelIndex  0
+        AttachingBoneName    "Bip01"
+        
+        CollisionType        3
+        
+        SphereDataCount      1
+        Group SphereData00
+        {
+            Radius           50.000000
+            Position         0.000000 0.000000 0.000000
+        }
+    }
+	
+	 Group AttachingData02
+    {
+        AttachingDataType    1
+        
+        isAttaching          1
+        AttachingModelIndex  0
+        AttachingBoneName    "Bip01"
+        
+		EffectScriptName     "d:/ymir work/npc/zyterios_warenhaus\test_depozit.mse"
+        EffectPosition       0.000000 0.000000 0.000000
+        EffectRotation       0.000000 0.000000 0.000000
+        }
+}

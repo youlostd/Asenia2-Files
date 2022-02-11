@@ -1,0 +1,168 @@
+ScriptType               MotionData
+
+MotionFileName           "D:\ymir work\monster2\plechi_chamber_wisdom\plechi_chamwis_boss\skill00.GR2"
+MotionDuration           3.166667
+
+Group MotionEventData
+{
+    MotionEventDataCount     11
+     Group Event00
+    {
+        MotionEventType      1
+        StartingTime         1.022571
+        
+        IndependentFlag      0
+        AttachingEnable      0
+        AttachingBoneName    "Root"
+        FollowingEnable      0
+        EffectFileName       "d:/ymir work/effect/plechito/monster/chamwis_boss_skill00a.mse"
+        EffectPosition       -800.000000 -500.000000 0.000000
+    }
+     Group Event01
+    {
+        MotionEventType      1
+        StartingTime         1.222571
+        
+        IndependentFlag      0
+        AttachingEnable      0
+        AttachingBoneName    "Root"
+        FollowingEnable      0
+        EffectFileName       "d:/ymir work/effect/plechito/monster/chamwis_boss_skill00b.mse"
+        EffectPosition       800.000000 -500.000000 0.000000
+    }
+     Group Event02
+    {
+        MotionEventType      1
+        StartingTime         1.222571
+        
+        IndependentFlag      0
+        AttachingEnable      0
+        AttachingBoneName    "Root"
+        FollowingEnable      0
+        EffectFileName       "d:/ymir work/effect/plechito/monster/chamwis_boss_skill00c.mse"
+        EffectPosition       0.000000 -800.000000 0.000000
+    }
+     Group Event03
+    {
+        MotionEventType      1
+        StartingTime         0.122571
+        
+        IndependentFlag      0
+        AttachingEnable      0
+        AttachingBoneName    "Root"
+        FollowingEnable      0
+        EffectFileName       "d:/ymir work/effect/plechito/monster/chamwis_boss_skill00d.mse"
+        EffectPosition       0.000000 -800.000000 0.000000
+    }
+     Group Event04
+    {
+        MotionEventType      1
+        StartingTime         0.122571
+        
+        IndependentFlag      0
+        AttachingEnable      0
+        AttachingBoneName    "Root"
+        FollowingEnable      0
+        EffectFileName       "d:/ymir work/effect/plechito/monster/chamwis_boss_skill00d.mse"
+        EffectPosition       800.000000 -500.000000 0.000000
+    }
+     Group Event05
+    {
+        MotionEventType      1
+        StartingTime         0.122571
+        
+        IndependentFlag      0
+        AttachingEnable      0
+        AttachingBoneName    "Root"
+        FollowingEnable      0
+        EffectFileName       "d:/ymir work/effect/plechito/monster/chamwis_boss_skill00d.mse"
+        EffectPosition       -800.000000 -500.000000 0.000000
+    }
+     Group Event06
+    {
+        MotionEventType      1
+        StartingTime         0.700000
+        
+        IndependentFlag      0
+        AttachingEnable      1
+        AttachingBoneName    "TongueBone002"
+        FollowingEnable      0
+        EffectFileName       "d:/ymir work/effect/plechito/monster/chamwis_boss_skill00e.mse"
+        EffectPosition       0.000000 -350.000000 0.000000
+    }
+    Group Event07
+    {
+        MotionEventType      2
+        StartingTime         0.722571
+        
+        DuringTime           1.4857452
+        Power                40
+        AffectingRange       2000
+    }
+    Group Event08
+    {
+        MotionEventType      4
+        StartingTime         0.922571
+        DuringTime           0.9857452
+        EnableHitProcess     0
+        
+        AttackType           0
+        HittingType          2
+        StiffenTime          0.000000
+        InvisibleTime        0.300000
+        ExternalForce        0.000000
+        HitLimitCount        3
+        CollisionType        4
+        
+        SphereDataCount      1
+        Group SphereData00
+        {
+            Radius           600.000000
+            Position         0.000000 -800.000000 0.000000
+        }
+    }
+    Group Event09
+    {
+        MotionEventType      4
+        StartingTime         0.922571
+        DuringTime           0.9857452
+        EnableHitProcess     0
+        
+        AttackType           0
+        HittingType          2
+        StiffenTime          0.000000
+        InvisibleTime        0.300000
+        ExternalForce        0.000000
+        HitLimitCount        3
+        CollisionType        4
+        
+        SphereDataCount      1
+        Group SphereData00
+        {
+            Radius           600.000000
+            Position         -800.000000 -500.000000 0.000000
+        }
+    }
+    Group Event10
+    {
+        MotionEventType      4
+        StartingTime         0.922571
+        DuringTime           0.9857452
+        EnableHitProcess     0
+        
+        AttackType           0
+        HittingType          2
+        StiffenTime          0.000000
+        InvisibleTime        0.300000
+        ExternalForce        0.000000
+        HitLimitCount        3
+        CollisionType        4
+        
+        SphereDataCount      1
+        Group SphereData00
+        {
+            Radius           600.000000
+            Position         800.000000 -500.000000 0.000000
+        }
+    }
+}

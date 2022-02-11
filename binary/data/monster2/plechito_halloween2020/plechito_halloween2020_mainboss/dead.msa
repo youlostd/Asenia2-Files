@@ -1,0 +1,26 @@
+ScriptType               MotionData
+
+MotionFileName           "D:\ymir work\monster2\plechito_halloween2020\plechito_halloween2020_mainboss\dead.GR2"
+MotionDuration           3.500000
+
+Group MotionEventData
+{
+    MotionEventDataCount     2
+    Group Event00
+    {
+        MotionEventType      1
+        StartingTime         3.400000
+        
+        IndependentFlag      0
+        AttachingEnable      0
+        AttachingBoneName    "Root"
+        FollowingEnable      0
+        EffectFileName       "d:/ymir work/effect/plechito/monster/h2020_m_boss_dead.mse"
+        EffectPosition       0.000000 0.000000 500.000000
+    }
+    Group Event01
+    {
+        MotionEventType      8
+        StartingTime         3.390000
+    }
+}

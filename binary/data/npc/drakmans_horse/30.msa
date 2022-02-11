@@ -1,0 +1,60 @@
+ScriptType               MotionData
+
+MotionFileName           "D:/ymir work/npc/drakmans_horse/30.GR2"
+MotionDuration           0.500000
+
+Group MotionEventData
+{
+    MotionEventDataCount     4
+    Group Event00
+    {
+        MotionEventType      1
+        StartingTime         0.017032
+        
+        IndependentFlag      0
+        AttachingEnable      1
+        AttachingBoneName    "horse_bip01 L Toe0"
+        FollowingEnable      1
+        EffectFileName       "d:/ymir work/effect/background/hfhsmoke_drakman.mse"
+        EffectPosition       0.000000 0.000000 0.000000
+    }
+	
+    Group Event01
+    {
+        MotionEventType      1
+        StartingTime         0.017032
+        
+        IndependentFlag      0
+        AttachingEnable      1
+        AttachingBoneName    "horse_bip01 R Toe0"
+        FollowingEnable      1
+        EffectFileName       "d:/ymir work/effect/background/hfhsmoke_drakman.mse"
+        EffectPosition       0.000000 0.000000 0.000000
+    }
+	
+	Group Event02
+    {
+        MotionEventType      1
+        StartingTime         0.017032
+        
+        IndependentFlag      0
+        AttachingEnable      1
+        AttachingBoneName    "horse_bip01 R Finger0Nub"
+        FollowingEnable      1
+        EffectFileName       "d:/ymir work/effect/background/hfhsmoke_drakman.mse"
+        EffectPosition       0.000000 0.000000 0.000000
+    }
+	
+	Group Event03
+    {
+        MotionEventType      1
+        StartingTime         0.017032
+        
+        IndependentFlag      0
+        AttachingEnable      1
+        AttachingBoneName    "horse_bip01 L Finger0Nub"
+        FollowingEnable      1
+        EffectFileName       "d:/ymir work/effect/background/hfhsmoke_drakman.mse"
+        EffectPosition       0.000000 0.000000 0.000000
+    }
+}

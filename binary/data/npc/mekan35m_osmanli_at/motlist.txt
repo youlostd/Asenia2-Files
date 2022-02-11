@@ -1,0 +1,12 @@
+GENERAL WAIT bekle1.msa 90
+GENERAL WAIT1 bekle3.msa 9
+GENERAL WAIT2 bekle4_son.msa 1
+GENERAL WALK yurume.msa 100
+GENERAL RUN kosma.msa 100
+GENERAL COMBO_ATTACK sersemle&atak.msa 100
+GENERAL COMBO_ATTACK1 sersemle&atak.msa 100
+GENERAL COMBO_ATTACK2 sersemle&atak.msa 100
+GENERAL FRONT_DAMAGE damage_ye.msa 100
+GENERAL BACK_DAMAGE damage_ye.msa 100
+GENERAL DEAD olme.msa 100
+

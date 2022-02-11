@@ -1,0 +1,70 @@
+ScriptType            RaceDataScript
+
+BaseModelFileName     "D:\ymir work\monster\plechito_halloween2020\plechi_halloween2020_stone1\plechi_halloween2020_stone1.GR2"
+
+Group ShapeData
+{
+    PathName 		 "D:\Ymir Work\monster\plechito_halloween2020\plechi_halloween2020_stone1/"
+    ShapeDataCount 		 1
+	
+    Group ShapeData00
+    {
+        ShapeIndex 		 0
+        Model 		 "plechi_halloween2020_stone1.gr2"
+        SourceSkin 		 "plechito_tex.dds"
+        TargetSkin 		 "plechito_tex2.dds"
+    }
+}
+Group AttachingData
+{
+    AttachingDataCount       3
+    
+    Group AttachingData00
+    {
+        AttachingDataType    1
+        
+        isAttaching          0
+        AttachingModelIndex  0
+        AttachingBoneName    "plechito_halloween2020_stone1"
+        
+        CollisionType        1
+        
+        SphereDataCount      1
+        Group SphereData00
+        {
+            Radius           90.000000
+            Position         -40.000000 0.000000 80.000000
+        }
+    }
+    
+    Group AttachingData01
+    {
+        AttachingDataType    1
+        
+        isAttaching          0
+        AttachingModelIndex  0
+        AttachingBoneName    "plechito_halloween2020_stone1"
+        
+        CollisionType        3
+        
+        SphereDataCount      1
+        Group SphereData00
+        {
+            Radius           90.000000
+            Position         -40.000000 0.000000 110.000000
+        }
+    }
+    
+    Group AttachingData02
+    {
+        AttachingDataType    2
+        
+        isAttaching          0
+        AttachingModelIndex  0
+        AttachingBoneName    "plechito_halloween2020_stone1"
+        
+        EffectScriptName     "D:\ymir work\effect\plechito\monster\h2020_m_stone1b_loop.mse"
+        EffectPosition       0.000000 0.000000 0.000000
+        EffectRotation       0.000000 0.000000 0.000000
+    }
+}

@@ -1,0 +1,33 @@
+ScriptType               MotionData
+
+MotionFileName           "D:\ymir work\npc\plechi_smith1\stay02.GR2"
+MotionDuration           9.000000
+
+Group MotionEventData
+{
+    MotionEventDataCount     2
+    Group Event00
+    {
+        MotionEventType      1
+        StartingTime         1.600000
+        
+        IndependentFlag      0
+        AttachingEnable      0
+        AttachingBoneName    "Main_Root"
+        FollowingEnable      0
+        EffectFileName       "d:/ymir work/npc/plechi_smith1/hammer_blow.mse"
+        EffectPosition       0.000000 -27.000000 70.000000
+    }
+    Group Event01
+    {
+        MotionEventType      1
+        StartingTime         7.950000
+        
+        IndependentFlag      0
+        AttachingEnable      0
+        AttachingBoneName    "Main_Root"
+        FollowingEnable      0
+        EffectFileName       "d:/ymir work/npc/plechi_smith1/hammer_blow.mse"
+        EffectPosition       0.000000 -27.000000 70.000000
+    }
+}

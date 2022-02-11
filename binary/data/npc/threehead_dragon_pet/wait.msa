@@ -1,0 +1,46 @@
+ScriptType               MotionData
+
+MotionFileName           "D:\ymir work\npc\threehead_dragon_pet\wait3.GR2"
+MotionDuration           4.333333
+Accumulation           0.00	0.00	0.00
+
+Group MotionEventData
+{
+    MotionEventDataCount     3
+    Group Event00
+    {
+        MotionEventType      1
+        StartingTime         1.356994
+        
+        IndependentFlag      0
+        AttachingEnable      1
+        AttachingBoneName    "Bone23"
+        FollowingEnable      1
+        EffectFileName       "d:/ymir work/npc/threehead_dragon_pet/fire.mse"
+        EffectPosition       0.000000 0.000000 0.000000
+    }
+    Group Event01
+    {
+        MotionEventType      1
+        StartingTime         1.356994
+        
+        IndependentFlag      0
+        AttachingEnable      1
+        AttachingBoneName    "Bone32"
+        FollowingEnable      1
+        EffectFileName       "d:/ymir work/npc/threehead_dragon_pet/fire2.mse"
+        EffectPosition       0.000000 0.000000 0.000000
+    }
+    Group Event02
+    {
+        MotionEventType      1
+        StartingTime         1.356994
+        
+        IndependentFlag      0
+        AttachingEnable      1
+        AttachingBoneName    "Bone30"
+        FollowingEnable      1
+        EffectFileName       "d:/ymir work/npc/threehead_dragon_pet/fire2.mse"
+        EffectPosition       0.000000 0.000000 0.000000
+    }
+}

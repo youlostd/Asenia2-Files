@@ -1,0 +1,7 @@
+GENERAL WAIT iddle1.msa 90
+GENERAL WAIT1 iddle2.msa 9
+GENERAL WALK walk.msa 100
+GENERAL RUN run.msa 100
+GENERAL DEAD dead.msa 100
+GENERAL SKILL2 attack.msa 100
+

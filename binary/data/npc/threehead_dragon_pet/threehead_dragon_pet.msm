@@ -1,0 +1,52 @@
+ScriptType            RaceDataScript
+
+BaseModelFileName     "D:\ymir work\npc\threehead_dragon_pet\threehead_dragon_pet.GR2"
+
+Group ShapeData
+{
+    PathName 		 ""
+    ShapeDataCount 		 0
+}
+Group AttachingData
+{
+    AttachingDataCount       3
+    
+    Group AttachingData00
+    {
+        AttachingDataType    2
+        
+        isAttaching          1
+        AttachingModelIndex  0
+        AttachingBoneName    "Bip01 Spine"
+        
+        EffectScriptName     "D:\ymir work\npc\threehead_dragon_pet\body.mse"
+        EffectPosition       0.000000 0.000000 0.000000
+        EffectRotation       0.000000 0.000000 0.000000
+    }
+    
+    Group AttachingData01
+    {
+        AttachingDataType    2
+        
+        isAttaching          1
+        AttachingModelIndex  0
+        AttachingBoneName    "Bone24"
+        
+        EffectScriptName     "D:\ymir work\npc\threehead_dragon_pet\point.mse"
+        EffectPosition       0.000000 0.000000 0.000000
+        EffectRotation       0.000000 0.000000 0.000000
+    }
+    
+    Group AttachingData02
+    {
+        AttachingDataType    2
+        
+        isAttaching          1
+        AttachingModelIndex  0
+        AttachingBoneName    "Bone22"
+        
+        EffectScriptName     "D:\ymir work\npc\threehead_dragon_pet\point.mse"
+        EffectPosition       0.000000 0.000000 0.000000
+        EffectRotation       0.000000 0.000000 0.000000
+    }
+}
