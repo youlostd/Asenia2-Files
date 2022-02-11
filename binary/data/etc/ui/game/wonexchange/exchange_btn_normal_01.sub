@@ -1,0 +1,7 @@
+title subImage
+version 1.0
+image "gui_ekran.png"
+left 0
+top 87
+right 15
+bottom 102

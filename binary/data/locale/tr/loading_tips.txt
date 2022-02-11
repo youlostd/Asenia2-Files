@@ -1,0 +1,24 @@
+1	Server yönetimi olarak ilk hedefimiz sorunsuz stabil bir oyun yapýsý ile sizlerin menuniyetini saðlamaktýr.
+2	Serverimizde oyun dýþý ticaret kesinlikle yasaktýr.Oyuncu kurallarý bilmekle mükelleftir. Verilen ceza kesinlikle iptal edilmez geri alýnamaz.
+3	Farm Bölgeleri Muhafýzýndan Üst Seviye Farm Haritalarýna ýþýnlanabilirsiniz.
+4	Serverimizde Tüm zindanlar tek kat ve geri dönüþ sistemine sahiptir.
+5	Global Offline Shop sistemi ile Her bölgeden pazarýnýza item ekleyebilirsiniz.
+6	Boss Ve Metin keserek "Gaya" Toplayýp Gaya Maðazalarýmýzdan Çeþitli Nesneler alabilirsiniz.
+7	Þebnem marketimizden Won ile Kolayca gücünüze güç katacak þebnemler alabilrisiniz.
+8	Boss zindalarýna girebilmek için Metinlerden elde ettiðiniz Zindan bileti nesnesi ile Bilet Marketten bilet alabilirsiniz.
+9	S Skiller ile artýk daha güçlüsünüz.Perferct seviyesinden sonra S ruh taþý ile becerilerinizi geliþtirebilirsiniz.
+10	Serverimizde'de Muhteþem Turnuvalarý Kaçýrma 3500 TL Lonca Turnuvasý Ödülü ve Bireysel Turnuva Ödülleri sizleri bekliyor.
+11	Her gün Saat 22:00'da Sýralamaya göre X2 Boss ve X2 Metin eventlerini kaçýrmayýn.
+12	En fazla 1.999.999.999 Yang ve 99999 Won taþýyabilirsiniz.
+13	Bazý Zindanlara giriþ yapabilmek için Rebirth seviyesi gerekmektedir.
+14	Mavi Ruh Taþý ve Mavi S Ruh taþý ile Becerilerinizi Derece Puaný kaybetmeden geliþtirebilrisiniz.
+15	Ünvan Sistemi ile kendinizi, belirlediðiniz rakiplere veya Yaratýklara karþý güçlendirebilirsiniz.
+16	Biyolog Chaegirab'in görevlerinin ödülü olarak aldýðýnýz bonuslar kalýcýdýr.
+17	Seviye 120'e kadar olan ve dahil karakterlerin yetenekleri Yaþlý Kadýn tarafýndan sýfýrlanabilir.
+18	Çakra Taþlarý Size Tanrýsal gücü vaad ediyor !
+19	Öðeler yükseltilince daha etkileyici bir görünüm kazanýyor.
+20	F9 Tuþu ile kolayca Ünvan Sistemine ulaþabilrisiniz.
+21	Oyun Seçeneklerinden Efektleri gizleyebilir. Köpek Modunu açabilirsiniz.
+22	Canavarlara zehirlerseniz,can göstergesi yeþil'e döner.
+23	Envanter kenarý yan panelden dilediðiniz sisteme ulaþabilirsiniz.
+24	Aklýnýza takýlan her konuda Site üzerinden Ticket sistemi ile ulaþabilirsiniz. Discord adresimizden ise sadece acil konularda geri dönüþ yapýlacaktýr.

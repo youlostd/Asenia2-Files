@@ -1,0 +1,309 @@
+Group VnumMapper
+{
+	#--#	DragonSoulName	Type
+	1	diamond	11
+	2	ruby	12
+	3	jade	13
+	4	sapphire	14
+	5	garnet	15
+	6	onyx	16
+}
+
+Group BasicApplys
+{
+	Group diamond
+	{
+		#--#	Apply_Type	Apply_value
+		1	INT	10
+		2	RESIST_ICE	10
+		3	ENCHANT_ICE	10
+	}
+
+	Group ruby
+	{
+		#--#	Apply_Type	Apply_value
+		1	STR	10
+		2	RESIST_FIRE	10
+		3	ENCHANT_FIRE	10
+	}
+	Group jade
+	{
+		#--#	Apply_Type	Apply_value
+		1	MAX_SP	500
+		2	RESIST_WIND	10
+		3	ENCHANT_WIND	10
+	}
+	Group sapphire
+	{
+		#--#	Apply_Type	Apply_value
+		1	DEX	10
+		2	RESIST_EARTH	10
+		3	ENCHANT_EARTH	10
+	}
+	Group garnet
+	{
+		#--#	Apply_Type	Apply_value
+		1	MAX_HP	1500
+		2	RESIST_ELEC	10
+		3	ENCHANT_ELECT	10
+	}
+	Group onyx
+	{
+		#--#	Apply_Type	Apply_value
+		1	CON	10
+		2	RESIST_DARK	10
+		3	ENCHANT_DARK	10
+	}
+}
+
+Group AdditionalApplys
+{
+	Group diamond
+	{
+		#--#	Apply_Type	Apply_value	Prob
+		1	MAGIC_ATT_GRADE	15	10
+		2	MAGIC_DEF_GRADE	15	10
+		3	SKILL_DAMAGE_BONUS	15	10
+		4	SKILL_DEFEND_BONUS	15	10
+	}
+	Group ruby
+	{
+		#--#	Apply_Type	Apply_value	Prob
+		1	ATT_BONUS	300	10
+		2	DEF_BONUS	200	10
+		3	NORMAL_HIT_DAMAGE_BONUS	15	10
+		4	NORMAL_HIT_DEFEND_BONUS	15	10
+	}
+	Group jade
+	{
+		#--#	Apply_Type	Apply_value	Prob
+		1	MAX_HP	3000	10
+		2	HP_REGEN	10	10
+		3	STEAL_HP	10	10
+		4	KILL_HP_RECOVER	5	10
+		5	MAX_HP_PCT	20	10
+	}
+	Group sapphire
+	{
+		#--#	Apply_Type	Apply_value	Prob
+		1	ATT_BONUS_TO_WARRIOR	15	10
+		2	ATT_BONUS_TO_ASSASSIN	15	10
+		3	ATT_BONUS_TO_SURA	15	10
+		4	ATT_BONUS_TO_SHAMAN	15	10
+		5	ATT_BONUS_TO_WOLFMAN	15	10
+		6	RESIST_WARRIOR	15	10
+		7	RESIST_ASSASSIN	15	10
+		8	RESIST_SURA	15	10
+		9	RESIST_SHAMAN	15	10
+		10	RESIST_WOLFMAN	15	10
+	}
+	Group garnet
+	{
+		#--#	Apply_Type	Apply_value	Prob
+		1	MAX_SP	1500	10
+		2	ATT_BOSS	10	10
+		3	ATT_BONUS_TO_MONSTER	10	10
+		4	ATTBONUS_METIN	10	10
+		5	KILL_SP_RECOVER	5	10
+		
+	}
+	Group onyx
+	{
+		#--#	Apply_Type	Apply_value	Prob
+		1	BLOCK	10	10
+		2	DODGE	10	10
+		3	REFLECT_MELEE	10	10
+		4	RESIST_CRITICAL	10	10
+		5	RESIST_PENETRATE	10	10
+	}
+}
+
+Group ApplyNumSettings
+{
+	Group Default
+	{
+		#--#	GRADE_NORMAL	GRADE_BRILLIANT	GRADE_RARE	GRADE_ANCIENT	GRADE_LEGENDARY	GRADE_MYTH	GRADE_EPIC
+		basis	1	1	1	2	2	3	3
+		add_min	0	0	0	0	0	0	0
+		add_max	0	1	2	2	3	3	3
+	}
+}
+
+Group WeightTables
+{
+	Group Default
+	{
+		Group GRADE_NORMAL
+		{
+			#--#	0	1	2	3	4	5	6
+			STEP_LOWEST	1	2	3	0	0	0	0
+			STEP_LOW	2	3	4	0	0	0	0
+			STEP_MID	3	4	5	6	0	0	0
+			STEP_HIGH	4	5	6	7	0	0	0
+			STEP_HIGHEST	5	6	7	8	10	0	0
+		}
+		Group GRADE_BRILLIANT
+		{
+			STEP_LOWEST	3	4	5	6	0	0	0
+			STEP_LOW	4	5	6	8	0	0	0
+			STEP_MID	5	6	8	10	0	0	0
+			STEP_HIGH	6	8	10	12	15	0	0
+			STEP_HIGHEST	8	10	12	15	20	0	0
+		}
+		Group GRADE_RARE
+		{
+			#--#	0	1	2	3	4	5	6
+			STEP_LOWEST	6	7	9	11	15	0	0
+			STEP_LOW	7	9	11	15	20	0	0
+			STEP_MID	9	11	15	20	25	0	0
+			STEP_HIGH	11	15	20	25	30	0	0
+			STEP_HIGHEST	15	20	25	30	40	0	0
+		}
+		Group GRADE_ANCIENT
+		{
+			#--#	0	1	2	3	4	5	6
+			STEP_LOWEST	10	12	15	18	20	0	0
+			STEP_LOW	12	15	18	20	25	0	0
+			STEP_MID	15	18	20	25	35	0	0
+			STEP_HIGH	18	20	25	35	40	0	0
+			STEP_HIGHEST	20	25	35	40	60	80	0
+		}
+		Group GRADE_LEGENDARY
+		{
+			#--#	0	1	2	3	4	5	6
+			STEP_LOWEST	30	35	40	45	50	0	0
+			STEP_LOW	35	40	45	50	55	0	0
+			STEP_MID	40	45	50	55	65	0	0
+			STEP_HIGH	45	50	55	65	75	90	0
+			STEP_HIGHEST	50	55	65	75	90	105	120
+		}
+		Group GRADE_MYTH
+		{
+			#--#	0	1	2	3	4	5	6
+			STEP_LOWEST	35	40	45	50	55	0	0
+			STEP_LOW	45	50	55	60	65	0	0
+			STEP_MID	50	55	60	70	80	0	0
+			STEP_HIGH	65	75	85	95	105	120	0
+			STEP_HIGHEST	75	85	95	105	120	135	160
+		}
+		Group GRADE_EPIC
+		{
+			#--#	0	1	2	3	4	5	6
+			STEP_LOWEST	40	45	50	55	60	0	0
+			STEP_LOW	55	60	65	70	75	0	0
+			STEP_MID	60	65	70	85	95	0	0
+			STEP_HIGH	85	100	115	125	135	150	0
+			STEP_HIGHEST	100	115	125	135	150	165	200
+		}
+	}
+}
+
+Group RefineGradeTables
+{
+	Group Default
+	{
+		#--#	NEED_COUNT	FEE	GRADE_NORMAL	GRADE_BRILLIANT	GRADE_RARE	GRADE_ANCIENT	GRADE_LEGENDARY	GRADE_MYTH	GRADE_EPIC
+		GRADE_NORMAL	2	30000	0	100	0	0	0	0	0
+		GRADE_BRILLIANT	2	50000	0	0	100	0	0	0	0
+		GRADE_RARE	2	70000	0	0	20	80	0	0	0
+		GRADE_ANCIENT	2	100000	0	0	0	25	75	0	0
+		GRADE_LEGENDARY	2	150000	0	0	0	0	24	76	0
+		GRADE_MYTH	2	200000	0	0	0	0	0	23	77
+	}
+}
+
+Group RefineStepTables
+{
+	Group Default
+	{
+		#--#	NEED_COUNT	FEE	STEP_LOWEST	STEP_LOW	STEP_MID	STEP_HIGH	STEP_HIGHEST
+		STEP_LOWEST	2	20000	30	100	0	0	0
+		STEP_LOW	2	30000	0	30	70	0	0
+		STEP_MID	2	40000	0	0	30	70	0
+		STEP_HIGH	2	50000	0	0	0	30	70
+	}
+}
+
+Group RefineStrengthTables
+{
+	Group Default
+	{
+		#--#	FEE	0	1	2	3	4	5
+		MATERIAL_DS_REFINE_NORMAL	10000	100	80	75	60	40	35
+		MATERIAL_DS_REFINE_BLESSED	20000	100	85	80	65	45	40
+		MATERIAL_DS_REFINE_HOLLY	30000	100	90	85	70	50	45
+	}
+}
+
+Group VnumToChangeStoneTypeNameMapper
+{
+	#--#	Vnum	ChangeStoneTypeName
+	1	100600	STONE_OF_CHANGE_NORMAL
+}
+
+Group ChangeStoneTypeTables
+{
+	Group Default
+	{
+		#--#	FEE	GRADE_NORMAL	GRADE_BRILLIANT	GRADE_RARE	GRADE_ANCIENT	GRADE_LEGENDARY	GRADE_MYTH
+		STONE_OF_CHANGE_NORMAL	0	80	65	55	45	35	25
+	}
+}
+
+Group ChangeDSTypeTables
+{
+	Group Default
+	{
+		#--#	DIAMOND	RUBY	JADE	SAPPHIRE	GARNET	ONYX
+		diamond	50	10	10	10	10	10
+		ruby	10	50	10	10	10	10
+		jade	10	10	50	10	10	10
+		sapphire	10	10	10	50	10	10
+		garnet	10	10	10	10	50	10
+		onyx	10	10	10	10	10	50
+	}
+}
+
+Group DragonHeartExtTables
+{
+	Group Default
+	{
+		#--#	1	2	3	4	5
+		CHARGING	0	5	15	30	50
+		GRADE_NORMAL	50	35	12	2	1
+		GRADE_BRILLIANT	35	40	20	4	1
+		GRADE_RARE	20	35	30	12	3
+		GRADE_ANCIENT	15	30	35	15	5
+		GRADE_LEGENDARY	10	20	40	20	10
+		GRADE_MYTH	10	20	40	20	10
+		GRADE_EPIC	10	20	40	20	10
+	}
+}
+
+Group DragonSoulExtTables
+{
+	Group Default
+	{
+		#--#	Prob	ByProduct
+		GRADE_NORMAL	100	30270
+		GRADE_BRILLIANT	100	30270
+		GRADE_RARE	100	30270
+		GRADE_ANCIENT	100	30270
+		GRADE_LEGENDARY	100	30270
+		GRADE_MYTH	100	30270
+		GRADE_EPIC	100	30270
+	}
+}
+
+Group ChangeAttrStepTables
+{
+	Group GRADE_MYTH
+	{
+		#--#	STEP	0	1	2	3
+		STEP_LOWEST	500	400	8	1
+		STEP_LOW	500	400	16	5
+		STEP_MID	500	400	40	10
+		STEP_HIGH	500	400	100	30
+		STEP_HIGHEST	500	400	300	150
+	}
+}
