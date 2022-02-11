@@ -1,0 +1,28 @@
+BIN		= ../libsql.a
+CXX		= g++8
+CFLAGS	+= -O2 -ggdb3 -g3 -std=c++2a -pipe -mtune=i386 -fstack-protector -static
+
+#####################################################
+CPP=AsyncSQL.cpp\
+	Semaphore.cpp\
+	Statement.cpp\
+	Tellwait.cpp\
+
+INCDIR += -I../../../Extern/mysql
+
+all: $(BIN)
+clean:
+	@rm -f *.o
+
+%.o: %.cpp
+	@echo -e "\033[0;32m[Ryzen LIBSQL]\033[0m\033[0;33m Derleniyor ->\033[0m" $<
+	@$(CXX) $(INCDIR) $(CFLAGS) -c $^ -o $@
+
+$(BIN): $(CPP:%.cpp=%.o)
+	@ar cru $(BIN) $^
+	@echo -e "\033[0;31m ------------------------------------------------ \033[0m"
+	@echo -e "\033[0;31m ----Derleme İşlemi Başarılı Bir Şekilde Tamamlandı.---- \033[0m"
+	@echo -e "\033[0;31m ----LIBSQL.A Dosyanız Bir Alt Dizine Gönderildi.---- \033[0m"
+	@echo -e "\033[0;31m ------------------------------------------------ \033[0m"
+	@ranlib $(BIN)
+	@rm -rf *.o
