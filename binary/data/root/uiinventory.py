@@ -1,0 +1,2327 @@
+import ui
+import player
+import mouseModule
+import net
+import app
+import snd
+import item
+import player
+import chat
+import grp
+import uiScriptLocale
+import uiRefine
+import uiAttachMetin
+import uiPickMoney
+import uiPickEtc
+import uiCommon
+import uiPrivateShopBuilder # 개인상점 열동안 ItemMove 방지
+import uiOfflineShopBuilder 
+import uiOfflineShop
+import localeInfo
+import constInfo
+import ime
+import wndMgr
+import uiToolTip
+import time
+import uiEvolution
+import uikygnitemsil
+import uiAkiraMenu
+import translate
+if app.ITEM_CHECKINOUT_UPDATE:
+	import exchange
+
+ITEM_MALL_BUTTON_ENABLE = True
+
+if app.__ENABLE_NEW_OFFLINESHOP__:
+	import offlineshop
+	import uinewofflineshop
+
+
+ITEM_FLAG_APPLICABLE = 1 << 14
+if app.ENABLE_SASH_SYSTEM:
+	import sash
+if app.ENABLE_AURA_SYSTEM:
+	import aura
+	
+
+
+	
+class CostumeWindow(ui.ScriptWindow):
+
+	def __init__(self, wndInventory):
+		import exception
+		
+		if not app.ENABLE_COSTUME_SYSTEM:			
+			exception.Abort("What do you do?")
+			return
+
+		if not wndInventory:
+			exception.Abort("wndInventory parameter must be set to InventoryWindow")
+			return						
+			 	 
+		ui.ScriptWindow.__init__(self)
+
+		self.isLoaded = 0
+		
+		self.wndInventory = wndInventory;
+
+		self.__LoadWindow()
+
+	def __del__(self):
+		ui.ScriptWindow.__del__(self)
+
+	def Show(self):
+		self.__LoadWindow()
+		self.RefreshCostumeSlot()
+
+		ui.ScriptWindow.Show(self)
+
+	def Close(self):
+		self.Hide()
+
+	def __LoadWindow(self):
+		if self.isLoaded == 1:
+			return
+
+		self.isLoaded = 1
+		self.evolution = None
+
+		try:
+			pyScrLoader = ui.PythonScriptLoader()
+			pyScrLoader.LoadScriptFile(self, "UIScript/CostumeWindow.py")
+		except:
+			import exception
+			exception.Abort("CostumeWindow.LoadWindow.LoadObject")
+
+		try:
+			wndEquip = self.GetChild("CostumeSlot")
+			self.GetChild("TitleBar").SetCloseEvent(ui.__mem_func__(self.Close))
+			self.kostum_gizle = self.GetChild("kostumgizle")
+			self.kostum_gizle.SetEvent(ui.__mem_func__(self.__clickkostumgizle))
+
+			self.kostum_sac_gizle = self.GetChild("sacgizle")
+			self.kostum_sac_gizle.SetEvent(ui.__mem_func__(self.__clickkostumsacigizle))
+
+			self.kostum_silah_gizle = self.GetChild("silahgizle")
+			self.kostum_silah_gizle.SetEvent(ui.__mem_func__(self.__clickkostumsilahigizle))
+			
+		except:
+			import exception
+			exception.Abort("CostumeWindow.LoadWindow.BindObject")
+
+		## Equipment
+		wndEquip.SetOverInItemEvent(ui.__mem_func__(self.wndInventory.OverInItem))
+		wndEquip.SetOverOutItemEvent(ui.__mem_func__(self.wndInventory.OverOutItem))
+		wndEquip.SetUnselectItemSlotEvent(ui.__mem_func__(self.wndInventory.UseItemSlot))
+		wndEquip.SetUseSlotEvent(ui.__mem_func__(self.wndInventory.UseItemSlot))						
+		wndEquip.SetSelectEmptySlotEvent(ui.__mem_func__(self.wndInventory.SelectEmptySlot))
+		wndEquip.SetSelectItemSlotEvent(ui.__mem_func__(self.wndInventory.SelectItemSlot))
+
+		self.wndEquip = wndEquip
+	def __clickkostumgizle(self):
+		import uiCommon
+		import localeInfo
+		Dialog = uiCommon.kostumekrani()
+		Dialog.SetText("Gizlemek istiyor musun?")
+		Dialog.SetAcceptEvent(ui.__mem_func__(self.Onayla1))
+		Dialog.SetCancelEvent(ui.__mem_func__(self.Reddet1))
+		Dialog.Open()
+		self.Dialog = Dialog
+
+	def Onayla1(self):
+		import app
+		import net
+		net.SendChatPacket("/costume_config 0")
+		self.Dialog.Close()
+
+	def Reddet1(self):
+		net.SendChatPacket("/costume_config 1")
+		self.Dialog.Close()
+
+	def __clickkostumsacigizle(self):
+		import uiCommon
+		import localeInfo
+		Dialog = uiCommon.kostumekrani()
+		Dialog.SetText("Gizlemek istiyor musun?")
+		Dialog.SetAcceptEvent(ui.__mem_func__(self.Onayla2))
+		Dialog.SetCancelEvent(ui.__mem_func__(self.Reddet2))
+		Dialog.Open()
+		self.Dialog = Dialog
+
+	def Onayla2(self):
+		import app
+		import net
+		net.SendChatPacket("/costume_h_config 0")
+		self.Dialog.Close()
+
+	def Reddet2(self):
+		net.SendChatPacket("/costume_h_config 1")
+		self.Dialog.Close()
+
+	def __clickkostumsilahigizle(self):
+		import uiCommon
+		import localeInfo
+		Dialog = uiCommon.kostumekrani()
+		Dialog.SetText("Gizlemek istiyor musun?")
+		Dialog.SetAcceptEvent(ui.__mem_func__(self.Onayla3))
+		Dialog.SetCancelEvent(ui.__mem_func__(self.Reddet3))
+		Dialog.Open()
+		self.Dialog = Dialog
+
+	def Onayla3(self):
+		import app
+		import net
+		net.SendChatPacket("/costume_w_config 0")
+		self.Dialog.Close()
+
+	def Reddet3(self):
+		net.SendChatPacket("/costume_w_config 1")
+		self.Dialog.Close()
+	def RefreshCostumeSlot(self):
+		getItemVNum=player.GetItemIndex
+		
+		for i in xrange(item.COSTUME_SLOT_COUNT):
+			slotNumber = item.COSTUME_SLOT_START + i
+			self.wndEquip.SetItemSlot(slotNumber, getItemVNum(slotNumber), 0)
+
+		self.wndEquip.RefreshSlot()
+		
+class BeltInventoryWindow(ui.ScriptWindow):
+
+	def __init__(self, wndInventory):
+		import exception
+		
+		if not app.ENABLE_NEW_EQUIPMENT_SYSTEM:			
+			exception.Abort("What do you do?")
+			return
+
+		if not wndInventory:
+			exception.Abort("wndInventory parameter must be set to InventoryWindow")
+			return						
+			 	 
+		ui.ScriptWindow.__init__(self)
+
+		self.isLoaded = 0
+		self.wndInventory = wndInventory;
+		
+		self.wndBeltInventoryLayer = None
+		self.wndBeltInventorySlot = None
+		self.expandBtn = None
+		self.minBtn = None
+
+		self.__LoadWindow()
+
+	def __del__(self):
+		ui.ScriptWindow.__del__(self)
+
+	def Show(self, openBeltSlot = FALSE):
+		self.__LoadWindow()
+		self.RefreshSlot()
+
+		ui.ScriptWindow.Show(self)
+		
+		if openBeltSlot:
+			self.OpenInventory()
+		else:
+			self.CloseInventory()
+
+	def Close(self):
+		self.Hide()
+
+	def IsOpeningInventory(self):
+		return self.wndBeltInventoryLayer.IsShow()
+		
+	def OpenInventory(self):
+		self.wndBeltInventoryLayer.Show()
+		self.expandBtn.Hide()
+
+		if localeInfo.IsARABIC() == 0:
+			self.AdjustPositionAndSize()
+				
+	def CloseInventory(self):
+		self.wndBeltInventoryLayer.Hide()
+		self.expandBtn.Show()
+		
+		if localeInfo.IsARABIC() == 0:
+			self.AdjustPositionAndSize()
+
+	## 현재 인벤토리 위치를 기준으로 BASE 위치를 계산, 리턴.. 숫자 하드코딩하기 정말 싫지만 방법이 없다..
+	def GetBasePosition(self):
+		x, y = self.wndInventory.GetGlobalPosition()
+		return x - 148, y + 241
+		
+	def AdjustPositionAndSize(self):
+		bx, by = self.GetBasePosition()
+		
+		if self.IsOpeningInventory():			
+			self.SetPosition(bx, by)
+			self.SetSize(self.ORIGINAL_WIDTH, self.GetHeight())
+			
+		else:
+			self.SetPosition(bx + 138, by);
+			self.SetSize(10, self.GetHeight())
+
+	def __LoadWindow(self):
+		if self.isLoaded == 1:
+			return
+
+		self.isLoaded = 1
+
+		try:
+			pyScrLoader = ui.PythonScriptLoader()
+			pyScrLoader.LoadScriptFile(self, "UIScript/BeltInventoryWindow.py")
+		except:
+			import exception
+			exception.Abort("CostumeWindow.LoadWindow.LoadObject")
+
+		try:
+			self.ORIGINAL_WIDTH = self.GetWidth()
+			wndBeltInventorySlot = self.GetChild("BeltInventorySlot")
+			self.wndBeltInventoryLayer = self.GetChild("BeltInventoryLayer")
+			self.expandBtn = self.GetChild("ExpandBtn")
+			self.minBtn = self.GetChild("MinimizeBtn")
+			
+			self.expandBtn.SetEvent(ui.__mem_func__(self.OpenInventory))
+			self.minBtn.SetEvent(ui.__mem_func__(self.CloseInventory))
+			
+			if localeInfo.IsARABIC() :
+				self.expandBtn.SetPosition(self.expandBtn.GetWidth() - 2, 15)
+				self.wndBeltInventoryLayer.SetPosition(self.wndBeltInventoryLayer.GetWidth() - 5, 0)
+				self.minBtn.SetPosition(self.minBtn.GetWidth() + 3, 15)			
+	
+			for i in xrange(item.BELT_INVENTORY_SLOT_COUNT):
+				slotNumber = item.BELT_INVENTORY_SLOT_START + i							
+				wndBeltInventorySlot.SetCoverButton(slotNumber,	"d:/ymir work/ui/game/quest/slot_button_01.sub",\
+												"d:/ymir work/ui/game/quest/slot_button_01.sub",\
+												"d:/ymir work/ui/game/quest/slot_button_01.sub",\
+												"d:/ymir work/ui/game/belt_inventory/slot_disabled.tga", FALSE, FALSE)									
+			
+		except:
+			import exception
+			exception.Abort("CostumeWindow.LoadWindow.BindObject")
+
+		## Equipment
+		wndBeltInventorySlot.SetOverInItemEvent(ui.__mem_func__(self.wndInventory.OverInItem))
+		wndBeltInventorySlot.SetOverOutItemEvent(ui.__mem_func__(self.wndInventory.OverOutItem))
+		wndBeltInventorySlot.SetUnselectItemSlotEvent(ui.__mem_func__(self.wndInventory.UseItemSlot))
+		wndBeltInventorySlot.SetUseSlotEvent(ui.__mem_func__(self.wndInventory.UseItemSlot))						
+		wndBeltInventorySlot.SetSelectEmptySlotEvent(ui.__mem_func__(self.wndInventory.SelectEmptySlot))
+		wndBeltInventorySlot.SetSelectItemSlotEvent(ui.__mem_func__(self.wndInventory.SelectItemSlot))
+
+		self.wndBeltInventorySlot = wndBeltInventorySlot
+
+	def RefreshSlot(self):
+		getItemVNum=player.GetItemIndex
+		
+		for i in xrange(item.BELT_INVENTORY_SLOT_COUNT):
+			slotNumber = item.BELT_INVENTORY_SLOT_START + i
+			self.wndBeltInventorySlot.SetItemSlot(slotNumber, getItemVNum(slotNumber), player.GetItemCount(slotNumber))
+			self.wndBeltInventorySlot.SetAlwaysRenderCoverButton(slotNumber, TRUE)
+			
+			avail = "0"
+			
+			if player.IsAvailableBeltInventoryCell(slotNumber):
+				self.wndBeltInventorySlot.EnableCoverButton(slotNumber)				
+			else:
+				self.wndBeltInventorySlot.DisableCoverButton(slotNumber)				
+
+		self.wndBeltInventorySlot.RefreshSlot()
+
+class MenuWindow(ui.ScriptWindow):
+
+	def __init__(self, wndInventory):
+		import exception
+
+		if not app.ENABLE_NEW_EQUIPMENT_SYSTEM:
+			exception.Abort("What do you do?")
+			return
+
+		if not wndInventory:
+			exception.Abort("wndInventory parameter must be set to InventoryWindow")
+			return
+
+		ui.ScriptWindow.__init__(self)
+
+		self.isLoaded = 0
+
+		self.wndInventory = wndInventory;
+		self.npcekran = None
+
+
+		self.__LoadWindow()
+
+	def __del__(self):
+		ui.ScriptWindow.__del__(self)
+
+	def Show(self):
+		self.__LoadWindow()
+
+		ui.ScriptWindow.Show(self)
+		self.EkraniAc()
+
+
+	def Close(self):
+		self.Hide()
+		
+	def EkraniAc(self):
+		self.AdjustPositionAndSize()
+		
+
+	def GetBasePosition(self):
+		x, y = self.wndInventory.GetGlobalPosition()
+		# return x - 58, y + 544-160
+		return x - 45, y + 120
+
+	def AdjustPositionAndSize(self):
+		bx, by = self.GetBasePosition()
+
+
+		self.SetPosition(bx, by)
+		self.SetSize(self.ORIGINAL_WIDTH, self.GetHeight())
+
+
+
+	def __LoadWindow(self):
+		if self.isLoaded == 1:
+			return
+
+		self.isLoaded = 1
+
+		try:
+			pyScrLoader = ui.PythonScriptLoader()
+			pyScrLoader.LoadScriptFile(self, "UIScript/MenuWindow.py")
+		except:
+			import exception
+			exception.Abort("CostumeWindow.LoadWindow.LoadObject")
+
+		try:
+			self.ORIGINAL_WIDTH = self.GetWidth()
+#			self.menuekran = self.GetChild("menuboard")
+			self.efsun = self.GetChild("efsun")
+			self.guvenlik = self.GetChild("guvenlik")
+			self.biyolog = self.GetChild("Biyolog")
+			self.stonesell = self.GetChild("stonesellbutton")
+			self.dungeon = self.GetChild("dungeon")
+#			self.special = self.GetChild("special")
+#			self.arama = self.GetChild("arama")
+			#self.poly = self.GetChild("poly")
+			self.thanos = self.GetChild("thanos")
+			self.patron = self.GetChild("patron")
+			self.won = self.GetChild("won_ac")
+#			self.itemdrop = self.GetChild("itemdrop")
+
+		except:
+			import exception
+			exception.Abort("CostumeWindow.LoadWindow.BindObject")
+			
+
+		self.efsun.SetEvent(ui.__mem_func__(self.efsunbutton))
+		self.guvenlik.SetEvent(ui.__mem_func__(self.guvenlikac))
+		self.biyolog.SetEvent(ui.__mem_func__(self.biyoac))
+		self.stonesell.SetEvent(ui.__mem_func__(self.stonesellbutton))
+		self.dungeon.SetEvent(ui.__mem_func__(self.dungeoninfo))
+#		self.special.SetEvent(ui.__mem_func__(self.specialenv))
+#		self.arama.SetEvent(ui.__mem_func__(self.aramagui))
+		#self.poly.SetEvent(ui.__mem_func__(self.polymorph))
+		self.thanos.SetEvent(ui.__mem_func__(self.thanosac))
+		self.patron.SetEvent(ui.__mem_func__(self.patronac))
+		self.won.SetEvent(ui.__mem_func__(self.wonac))
+		#self.itemdrop.SetEvent(ui.__mem_func__(self.dropac))
+
+	def guvenlikac(self):	
+		net.SendChatPacket("/open_security 1")
+        
+	def thanosac(self):	
+		constInfo.BOSS_TAKIP_WINDOW = 1
+
+#		
+	def patronac(self):	
+		constInfo.OFFLINE_SHOP = 1
+	#def polymorph(self):
+		#net.SendChatPacket("/remove_polymorph")
+		
+	def wonac(self):
+		constInfo.WONACULAN = 1
+		
+
+				
+	def npcaculan(self):	
+		self.NPCAC()
+		
+	def biyoac(self):	
+		self.wndInventory.BiyoEkran()
+		
+	def efsunbutton(self):
+		self.wndInventory.EfsunBotu()
+	
+	
+	def stonesellbutton(self):	
+		import uihikmet
+		self.Guvenlikdialog = uihikmet.HikmetDialog()
+		self.Guvenlikdialog.Show()
+		
+	def dungeoninfo(self):
+		self.wndInventory.Dungeon()
+		
+	def specialenv(self):
+		self.wndInventory.SpecialSt()	
+		
+	#def aramagui(self):
+		#net.SendChatPacket("/ticaret_cam_ac")
+		#self.wndInventory.TicArama()
+
+		
+class InventoryWindow(ui.ScriptWindow):
+
+	USE_TYPE_TUPLE = ("USE_CLEAN_SOCKET", "USE_CHANGE_ATTRIBUTE", "USE_ADD_ATTRIBUTE", "USE_ADD_ATTRIBUTE2", "USE_ADD_ACCESSORY_SOCKET", "USE_PUT_INTO_ACCESSORY_SOCKET", "USE_PUT_INTO_BELT_SOCKET", "USE_PUT_INTO_RING_SOCKET", "USE_COSTUME_ENCHANT", "USE_COSTUME_TRANSFORM","USE_CHANGE_ATTRIBUTE_ELEMENT","USE_ADD_ATTRIBUTE_ELEMENT", "USE_CHANGE_ATTRIBUTE_MOUNT","USE_ADD_ATTRIBUTE_MOUNT")
+
+	questionDialog = None
+	tooltipItem = None
+	wndCostume = None
+	wndBelt = None
+	wndMenu = None
+	dlgPickMoney = None
+	dlgQuestion = None
+	dlgPickItem = None
+	if app.ENABLE_CUBE_RENEWAL:
+		wndCubeRenewal = None
+	sonbasma = 0
+	
+	sellingSlotNumber = -1
+	isLoaded = 0
+	isOpenedCostumeWindowWhenClosingInventory = 0		# 인벤토리 닫을 때 코스츔이 열려있었는지 여부-_-; 네이밍 ㅈㅅ
+	isOpenedBeltWindowWhenClosingInventory = 0		# 인벤토리 닫을 때 벨트 인벤토리가 열려있었는지 여부-_-; 네이밍 ㅈㅅ
+
+	bolunenPos = -1
+	bolunecekSayi = 0
+	baslangicPos = -1
+	islemYapiliyor = False
+	sonIslemMs = 0
+	tasinanSayi = 0
+	tasinacakSayi = 0
+	tasinacakWindow = 0
+	tasinanWindow = 0
+	islemBitisSuresi = 0
+	
+	def __init__(self):
+		ui.ScriptWindow.__init__(self)
+
+		self.isOpenedBeltWindowWhenClosingInventory = 0		# 인벤토리 닫을 때 벨트 인벤토리가 열려있었는지 여부-_-; 네이밍 ㅈㅅ
+
+		self.__LoadWindow()
+
+	def __del__(self):
+		ui.ScriptWindow.__del__(self)
+
+	def Show(self):
+		self.__LoadWindow()
+
+		ui.ScriptWindow.Show(self)
+
+		# 인벤토리를 닫을 때 코스츔이 열려있었다면 인벤토리를 열 때 코스츔도 같이 열도록 함.
+		if self.isOpenedCostumeWindowWhenClosingInventory and self.wndCostume:
+			self.wndCostume.Show() 
+
+		# 인벤토리를 닫을 때 벨트 인벤토리가 열려있었다면 같이 열도록 함.
+		if self.wndBelt:
+			self.wndBelt.Show(self.isOpenedBeltWindowWhenClosingInventory)
+
+		if self.wndMenu:
+			self.wndMenu.Show()
+
+	def BindInterfaceClass(self, interface):
+		self.interface = interface
+		
+	def __LoadWindow(self):
+		if self.isLoaded == 1:
+			return
+
+		self.isLoaded = 1
+
+		try:
+			pyScrLoader = ui.PythonScriptLoader()
+			pyScrLoader.LoadScriptFile(self, "UIScript/InventoryWindow.py")
+		except:
+			import exception
+			exception.Abort("InventoryWindow.LoadWindow.LoadObject")
+
+		try:
+			self.GetChild("TitleBar").SetCloseEvent(ui.__mem_func__(self.Close))
+			self.envyenile = self.GetChild2("SeparateButton")
+
+			wndItem = self.GetChild("ItemSlot")
+			wndEquip = self.GetChild("EquipmentSlot")
+			wndCostume = self.GetChild("CostumeSlot")
+			wndSecondary = self.GetChild("SecondarySlot")
+			wndTalisman = self.GetChild("TalismanSlot")
+			wndEffect = self.GetChild("EffectSlot")
+			wndSebnem = self.GetChild("SebnemSlot")
+			wndMarka = self.GetChild("MarkaSlot")
+
+			mask1 = self.GetChild("Equipment_Base")
+			mask2 = self.GetChild("Costume_Base")
+			mask3 = self.GetChild("Secondary_Base")
+			mask4 = self.GetChild("Talisman_Base")
+			mask5 = self.GetChild("Effect_Base")
+			mask6 = self.GetChild("Sebnem_Base")
+			mask7 = self.GetChild("Tanri_Base")
+
+			self.mallButton = self.GetChild2("MallButton")
+			self.DepButton = self.GetChild2("DepButton")
+			self.DSSButton = self.GetChild2("DSSButton")
+
+			if app.ENABLE_SPECIAL_STORAGE:
+				self.SpecialStorageButton = self.GetChild2("SpecialStorageButton")
+
+			self.npcacamk = self.GetChild2("npcacamk")
+
+			self.inventoryTab = []
+			self.inventoryTab.append(self.GetChild("Inventory_Tab_01"))
+			self.inventoryTab.append(self.GetChild("Inventory_Tab_02"))
+			self.inventoryTab.append(self.GetChild("Inventory_Tab_03"))
+			self.inventoryTab.append(self.GetChild("Inventory_Tab_04"))
+			self.equipmentTab = []
+			self.equipmentTab.append(self.GetChild("Equipment_Tab_01"))
+			self.equipmentTab.append(self.GetChild("Equipment_Tab_02"))
+
+			self.costumeTab = []
+			self.costumeTab.append(self.GetChild("Costume_Tab_01"))
+			self.costumeTab.append(self.GetChild("Costume_Tab_02"))
+			self.costumeTab.append(self.GetChild("Costume_Tab_03"))
+			self.costumeTab.append(self.GetChild("Costume_Tab_04"))
+			self.costumeTab.append(self.GetChild("Costume_Tab_05"))
+			self.costumeTab.append(self.GetChild("Costume_Tab_06"))
+			self.costumeTab.append(self.GetChild("Costume_Tab_07"))
+
+			# Belt Inventory Window
+			self.wndBelt = None
+			self.wndMenu = None
+			self.wndMenu = MenuWindow(self)
+			if app.ENABLE_NEW_EQUIPMENT_SYSTEM:
+				self.wndBelt = BeltInventoryWindow(self)
+			
+		except:
+			import exception
+			exception.Abort("InventoryWindow.LoadWindow.BindObject")
+
+		## Item
+		wndItem.SetSelectEmptySlotEvent(ui.__mem_func__(self.SelectEmptySlot))
+		wndItem.SetSelectItemSlotEvent(ui.__mem_func__(self.SelectItemSlot))
+		wndItem.SetUnselectItemSlotEvent(ui.__mem_func__(self.UseItemSlot))
+		wndItem.SetUseSlotEvent(ui.__mem_func__(self.UseItemSlot))
+		wndItem.SetOverInItemEvent(ui.__mem_func__(self.OverInItem))
+		wndItem.SetOverOutItemEvent(ui.__mem_func__(self.OverOutItem))
+
+		wndEquip.SetSelectEmptySlotEvent(ui.__mem_func__(self.SelectEmptySlot))
+		wndEquip.SetSelectItemSlotEvent(ui.__mem_func__(self.SelectItemSlot))
+		wndEquip.SetUnselectItemSlotEvent(ui.__mem_func__(self.UseItemSlot))
+		wndEquip.SetUseSlotEvent(ui.__mem_func__(self.UseItemSlot))
+		wndEquip.SetOverInItemEvent(ui.__mem_func__(self.OverInItem))
+		wndEquip.SetOverOutItemEvent(ui.__mem_func__(self.OverOutItem))
+
+		wndCostume.SetSelectEmptySlotEvent(ui.__mem_func__(self.SelectEmptySlot))
+		wndCostume.SetSelectItemSlotEvent(ui.__mem_func__(self.SelectItemSlot))
+		wndCostume.SetUnselectItemSlotEvent(ui.__mem_func__(self.UseItemSlot))
+		wndCostume.SetUseSlotEvent(ui.__mem_func__(self.UseItemSlot))
+		wndCostume.SetOverInItemEvent(ui.__mem_func__(self.OverInItem))
+		wndCostume.SetOverOutItemEvent(ui.__mem_func__(self.OverOutItem))
+
+		wndSecondary.SetSelectEmptySlotEvent(ui.__mem_func__(self.SelectEmptySlot))
+		wndSecondary.SetSelectItemSlotEvent(ui.__mem_func__(self.SelectItemSlot))
+		wndSecondary.SetUnselectItemSlotEvent(ui.__mem_func__(self.UseItemSlot))
+		wndSecondary.SetUseSlotEvent(ui.__mem_func__(self.UseItemSlot))
+		wndSecondary.SetOverInItemEvent(ui.__mem_func__(self.OverInItem))
+		wndSecondary.SetOverOutItemEvent(ui.__mem_func__(self.OverOutItem))
+
+		wndTalisman.SetSelectEmptySlotEvent(ui.__mem_func__(self.SelectEmptySlot))
+		wndTalisman.SetSelectItemSlotEvent(ui.__mem_func__(self.SelectItemSlot))
+		wndTalisman.SetUnselectItemSlotEvent(ui.__mem_func__(self.UseItemSlot))
+		wndTalisman.SetUseSlotEvent(ui.__mem_func__(self.UseItemSlot))
+		wndTalisman.SetOverInItemEvent(ui.__mem_func__(self.OverInItem))
+		wndTalisman.SetOverOutItemEvent(ui.__mem_func__(self.OverOutItem))
+
+		wndEffect.SetSelectEmptySlotEvent(ui.__mem_func__(self.SelectEmptySlot))
+		wndEffect.SetSelectItemSlotEvent(ui.__mem_func__(self.SelectItemSlot))
+		wndEffect.SetUnselectItemSlotEvent(ui.__mem_func__(self.UseItemSlot))
+		wndEffect.SetUseSlotEvent(ui.__mem_func__(self.UseItemSlot))
+		wndEffect.SetOverInItemEvent(ui.__mem_func__(self.OverInItem))
+		wndEffect.SetOverOutItemEvent(ui.__mem_func__(self.OverOutItem))
+
+
+		wndSebnem.SetSelectEmptySlotEvent(ui.__mem_func__(self.SelectEmptySlot))
+		wndSebnem.SetSelectItemSlotEvent(ui.__mem_func__(self.SelectItemSlot))
+		wndSebnem.SetUnselectItemSlotEvent(ui.__mem_func__(self.UseItemSlot))
+		wndSebnem.SetUseSlotEvent(ui.__mem_func__(self.UseItemSlot))
+		wndSebnem.SetOverInItemEvent(ui.__mem_func__(self.OverInItem))
+		wndSebnem.SetOverOutItemEvent(ui.__mem_func__(self.OverOutItem))
+		
+		
+		wndMarka.SetSelectEmptySlotEvent(ui.__mem_func__(self.SelectEmptySlot))
+		wndMarka.SetSelectItemSlotEvent(ui.__mem_func__(self.SelectItemSlot))
+		wndMarka.SetUnselectItemSlotEvent(ui.__mem_func__(self.UseItemSlot))
+		wndMarka.SetUseSlotEvent(ui.__mem_func__(self.UseItemSlot))
+		wndMarka.SetOverInItemEvent(ui.__mem_func__(self.OverInItem))
+		wndMarka.SetOverOutItemEvent(ui.__mem_func__(self.OverOutItem))
+		## PickMoneyDialog
+		dlgPickMoney = uiPickMoney.PickMoneyDialog()
+		##dlgPickMoney = uiPickMoney.TopluItemAyir()
+		dlgPickMoney.LoadDialog()
+		dlgPickMoney.Hide()
+
+		dlgQuestion = uiCommon.QuestionDialog2()
+		dlgQuestion.Close()
+		
+
+		#dlgPickItem = uiPickEtc.PickEtcDialog()
+		dlgPickItem = uiPickEtc.TopluItemAyir()
+		dlgPickItem.LoadDialog()
+		dlgPickItem.Hide()
+		## RefineDialog
+		self.refineDialog = uiRefine.RefineDialog()
+		self.refineDialog.Hide()
+
+		self.EvolutionDialog = uiEvolution.EvolutionDialog()
+		self.EvolutionDialog.Hide()
+
+		## AttachMetinDialog
+		self.attachMetinDialog = uiAttachMetin.AttachMetinDialog()
+		self.attachMetinDialog.Hide()
+		if app.ENABLE_KOSTUMPARLA:
+			self.costumeffect = uiCommon.CostumEffectDialog()
+			self.costumeffect.Hide()
+
+		## MoneySlot
+		#self.wndMoneySlot.SetEvent(ui.__mem_func__(self.OpenPickMoneyDialog))
+
+		self.inventoryTab[0].SetEvent(lambda arg=0: self.SetInventoryPage(arg))
+		self.inventoryTab[1].SetEvent(lambda arg=1: self.SetInventoryPage(arg))
+		self.inventoryTab[2].SetEvent(lambda arg=2: self.SetInventoryPage(arg))
+		self.inventoryTab[3].SetEvent(lambda arg=3: self.SetInventoryPage(arg))
+		self.inventoryTab[0].Down()
+		self.inventoryPageIndex = 0
+
+
+		self.equipmentTab[0].SetEvent(lambda arg=0: self.SetEquipmentPage(arg))
+		self.equipmentTab[1].SetEvent(lambda arg=1: self.SetEquipmentPage(arg))
+		self.equipmentTab[0].Down()
+		self.equipmentTab[0].Hide()
+		self.equipmentTab[1].Hide()
+
+
+		self.costumeTab[0].SetEvent(lambda arg=0: self.SetEquipmentPage(arg))
+		self.costumeTab[1].SetEvent(lambda arg=1: self.SetEquipmentPage(arg))
+		self.costumeTab[2].SetEvent(lambda arg=2: self.SetEquipmentPage(arg))
+		self.costumeTab[3].SetEvent(lambda arg=3: self.SetEquipmentPage(arg))
+		self.costumeTab[4].SetEvent(lambda arg=4: self.SetEquipmentPage(arg))
+		self.costumeTab[5].SetEvent(lambda arg=5: self.SetEquipmentPage(arg))
+		self.costumeTab[6].SetEvent(lambda arg=6: self.SetEquipmentPage(arg))
+
+
+		self.dlgPickMoney = dlgPickMoney
+		self.dlgPickItem = dlgPickItem
+
+		self.costumeTab[0].Down()
+		self.costumePageIndex = 0
+
+		self.wndItem = wndItem
+		self.wndEquip = wndEquip
+
+		self.wndCostume = wndCostume
+		self.wndSecondary = wndSecondary
+		self.wndTalisman = wndTalisman
+		self.wndEffect = wndEffect
+		self.wndSebnem = wndSebnem
+		self.wndMarka = wndMarka
+
+		self.mask1 = mask1
+		self.mask2 = mask2
+		self.mask3 = mask3
+		self.mask4 = mask4
+		self.mask5 = mask5
+		self.mask6 = mask6
+		self.mask7 = mask7
+
+		# MallButton
+		if self.mallButton:
+			self.mallButton.SetEvent(ui.__mem_func__(self.ClickMallButton))
+		# K envanter Buton
+		if self.SpecialStorageButton:
+			self.SpecialStorageButton.SetEvent(ui.__mem_func__(self.ClickSpecialStorage))
+		#End
+		if self.DSSButton:
+			self.DSSButton.SetEvent(ui.__mem_func__(self.ClickDSSButton)) 
+	
+		if app.ENABLE_SPECIAL_STORAGE:
+			if self.SpecialStorageButton:
+				self.SpecialStorageButton.SetEvent(ui.__mem_func__(self.ClickSpecialStorage))
+				
+		if self.envyenile:
+			self.envyenile.SetEvent(ui.__mem_func__(self.envanterduzenle))		
+
+		if self.npcacamk:
+			self.npcacamk.SetEvent(ui.__mem_func__(self.NPCAC))		
+
+
+	
+
+		# self.wndCostume = None
+		
+ 		#####
+
+		## Refresh
+		if app.ENABLE_SASH_SYSTEM:
+			self.listAttachedSashs = []
+		if app.ENABLE_AURA_SYSTEM:
+			self.listAttachedAuras = []
+		self.bolunecekSayi = 0
+		self.bolunenPos = -1
+		self.baslangicPos = -1
+		self.islemYapiliyor = False
+		self.sonIslemMs = 0
+		self.tasinanSayi = 0
+		self.islemTuru = 0
+		self.tasinacakSayi = 0
+		self.tasinacakWindow = 0
+		self.tasinanWindow = 0
+		self.islemBitisSuresi = 0
+			
+		self.SetInventoryPage(0)
+		self.SetEquipmentPage(0)
+		self.RefreshItemSlot()
+		if app.ENABLE_NEW_PET_SYSTEM:
+			self.wndPetFeedWindow = None
+
+	def envanterduzenle(self):
+		if app.GetTime() > self.sonbasma:
+			net.SendChatPacket("/click_sort_items")
+			self.sonbasma = app.GetTime() + 5
+		else:
+			v = self.sonbasma - app.GetTime()
+			chat.AppendChat(chat.CHAT_TYPE_NOTICE, localeInfo.envanteryenileme % (v))	
+
+	def Destroy(self):
+		self.ClearDictionary()
+
+		self.dlgPickMoney.Destroy()
+		self.dlgPickItem.Destroy()
+		self.dlgPickItem = 0
+		self.dlgPickMoney = 0
+
+		self.refineDialog.Destroy()
+		self.refineDialog = 0
+
+		self.EvolutionDialog.Destroy()
+		self.EvolutionDialog = 0
+
+		self.attachMetinDialog.Destroy()
+		self.attachMetinDialog = 0
+
+		if app.ENABLE_KOSTUMPARLA:
+			self.costumeffect.Destroy()
+			self.costumeffect = 0
+
+
+		self.tooltipItem = None
+
+		self.wndItem = 0
+		self.wndEquip = 0
+		self.wndCostume = 0
+		self.wndSecondary = 0
+		self.wndTalisman = 0
+		self.wndEffect = 0
+		self.wndSebnem = 0
+		self.wndMarka = 0
+
+		self.dlgPickMoney = 0
+		self.questionDialog = None
+		self.mallButton = None
+		self.DSSButton = None
+
+		if app.ENABLE_DSS_ACTIVE_EFFECT_BUTTON:
+			self.DSSButtonEffect = None
+
+		self.interface = None
+		self.evolution = None
+
+		if app.ENABLE_SPECIAL_STORAGE:
+			self.SpecialStorageButton = None
+
+		if self.wndBelt:
+			self.wndBelt.Destroy()
+			self.wndBelt = None
+			
+		if self.wndMenu:
+			self.wndMenu.Destroy()
+			self.wndMenu = None		
+
+
+
+		self.inventoryTab = []
+		self.equipmentTab = []
+
+	def Hide(self):
+		if constInfo.GET_ITEM_QUESTION_DIALOG_STATUS():
+			self.OnCloseQuestionDialog()
+			return
+		if None != self.tooltipItem:
+			self.tooltipItem.HideToolTip()
+
+		if self.wndBelt:
+			self.isOpenedBeltWindowWhenClosingInventory = self.wndBelt.IsOpeningInventory()		# 인벤토리 창이 닫힐 때 벨트 인벤토리도 열려 있었는가?
+			print "Is Opening Belt Inven?? ", self.isOpenedBeltWindowWhenClosingInventory
+			self.wndBelt.Close()
+
+		if self.wndMenu:
+			self.wndMenu.Close()
+			
+		if self.dlgPickMoney:
+			self.dlgPickMoney.Close()
+		
+		if self.dlgPickItem:
+			self.dlgPickItem.Close()
+		wndMgr.Hide(self.hWnd)
+		
+	
+	def Close(self):
+		self.Hide()
+
+	def SetInventoryPage(self, page):
+		self.inventoryTab[self.inventoryPageIndex].SetUp()
+		self.inventoryPageIndex = page
+		self.inventoryTab[self.inventoryPageIndex].Down() 
+		self.RefreshBagSlotWindow()
+
+	def SetEquipmentPage(self, page):
+		self.costumeTab[self.costumePageIndex].SetUp()
+		self.costumePageIndex = page
+		self.costumeTab[self.costumePageIndex].Down()
+
+		self.mask1.Hide()
+		self.mask2.Hide()
+		self.mask3.Hide()
+		self.mask4.Hide()
+		self.mask5.Hide()
+		self.mask6.Hide()
+		self.mask7.Hide()
+
+		if page == 0:
+			self.mask1.Show()
+		elif page == 1:
+			self.mask2.Show()
+		elif page == 2:
+			self.mask3.Show()
+		elif page == 3:
+			self.mask4.Show()
+		elif page == 4:
+			self.mask5.Show()
+		elif page == 5:
+			self.mask6.Show()
+		elif page == 6:
+			self.mask7.Show()
+		else:
+			self.mask1.Hide()
+			self.mask2.Hide()
+			self.mask3.Hide()
+			self.mask4.Hide()
+			self.mask5.Hide()
+			self.mask6.Hide()
+			self.mask7.Hide()
+
+		self.RefreshEquipSlotWindow()
+
+	def ClickMallButton(self):
+		print "click_mall_button"
+		net.SendChatPacket("/click_safebox")
+	# Cryptex Depozit
+	def ClickSpecialStorage(self):
+		print "click_specialstorage_button"
+		net.SendChatPacket("/click_special")
+	# End
+
+	# DSSButton
+	def ClickDSSButton(self):
+		print "click_dss_button"
+		self.interface.ToggleDragonSoulWindow()
+	if app.ENABLE_DSS_ACTIVE_EFFECT_BUTTON:
+		def UseDSSButtonEffect(self, enable):
+			if self.DSSButton:
+				DSSButtonEffect = ui.SlotWindow()
+				DSSButtonEffect.AddFlag("attach")
+				DSSButtonEffect.SetParent(self.DSSButton)
+				DSSButtonEffect.SetPosition(1.2, 0)
+
+				DSSButtonEffect.AppendSlot(0, 0, 0, 32, 32)
+				DSSButtonEffect.SetRenderSlot(0)
+				DSSButtonEffect.RefreshSlot()
+
+				if enable == True:
+					DSSButtonEffect.ActivateSlot(0)
+					DSSButtonEffect.Show()
+				else:
+					DSSButtonEffect.DeactivateSlot(0)
+					DSSButtonEffect.Hide()
+				self.DSSButtonEffect = DSSButtonEffect
+	
+	if app.ENABLE_SPECIAL_STORAGE:
+		def ClickSpecialStorage(self):
+			self.interface.ToggleSpecialStorageWindow()
+	
+	
+
+
+	
+
+	def OnPickItem(self, count):
+		itemSlotIndex = self.dlgPickItem.itemGlobalSlotIndex
+		if app.__ENABLE_NEW_OFFLINESHOP__:
+			if uinewofflineshop.IsBuildingShop() and uinewofflineshop.IsSaleSlot(player.INVENTORY, itemSlotIndex):
+				chat.AppendChat(chat.CHAT_TYPE_INFO, localeInfo.OFFLINESHOP_CANT_SELECT_ITEM_DURING_BUILING)
+				return
+		selectedItemVNum = player.GetItemIndex(itemSlotIndex)
+		#mouseModule.mouseController.AttachObject(self, player.SLOT_TYPE_INVENTORY, itemSlotIndex, selectedItemVNum, count)
+		mouseModule.mouseController.AttachObjectTopluAyrim(self, player.SLOT_TYPE_INVENTORY, itemSlotIndex, selectedItemVNum, count, self.dlgPickItem.TopluAyirmaMi())
+
+	def __InventoryLocalSlotPosToGlobalSlotPos(self, local):
+		if player.IsEquipmentSlot(local) or player.IsCostumeSlot(local) or (app.ENABLE_NEW_EQUIPMENT_SYSTEM and player.IsBeltInventorySlot(local)):
+			return local
+
+		return self.inventoryPageIndex*player.INVENTORY_PAGE_SIZE + local
+
+	def RefreshBagSlotWindow(self):
+		getItemVNum = player.GetItemIndex
+		getItemCount = player.GetItemCount
+		setItemVNum = self.wndItem.SetItemSlot
+
+		for i in xrange(player.INVENTORY_PAGE_SIZE):
+			slotNumber = self.__InventoryLocalSlotPosToGlobalSlotPos(i)
+
+			itemCount = getItemCount(slotNumber)
+			if 0 == itemCount:
+				self.wndItem.ClearSlot(i)
+				continue
+			elif 1 == itemCount:
+				itemCount = 0
+
+			itemVnum = getItemVNum(slotNumber)
+			setItemVNum(i, itemVnum, itemCount)
+
+			if constInfo.IS_AUTO_POTION(itemVnum):
+				metinSocket = [player.GetItemMetinSocket(slotNumber, j) for j in xrange(player.METIN_SOCKET_MAX_NUM)]
+				if slotNumber >= player.INVENTORY_PAGE_SIZE * self.inventoryPageIndex:
+					slotNumber -= player.INVENTORY_PAGE_SIZE * self.inventoryPageIndex
+
+				isActivated = 0 != metinSocket[0]
+				if isActivated:
+					self.wndItem.ActivateSlot(slotNumber)
+					potionType = 0;
+					if constInfo.IS_AUTO_POTION_HP(itemVnum):
+						potionType = player.AUTO_POTION_TYPE_HP
+					elif constInfo.IS_AUTO_POTION_SP(itemVnum):
+						potionType = player.AUTO_POTION_TYPE_SP
+
+					usedAmount = int(metinSocket[1])
+					totalAmount = int(metinSocket[2])
+					player.SetAutoPotionInfo(potionType, isActivated, (totalAmount - usedAmount), totalAmount, self.__InventoryLocalSlotPosToGlobalSlotPos(i))
+				else:
+					self.wndItem.DeactivateSlot(slotNumber)
+			else:
+				self.wndItem.DeactivateSlot(i)
+
+				slotNumberChecked = 0
+				if app.ENABLE_AURA_SYSTEM:
+					for j in xrange(aura.WINDOW_MAX_MATERIALS):
+						(isHere, iCell) = aura.GetAttachedItem(j)
+						if isHere:
+							if iCell == slotNumber:
+								if not slotNumber in self.listAttachedAuras:
+									self.listAttachedAuras.append(slotNumber)
+
+								slotNumberChecked = 1
+						else:
+							if slotNumber in self.listAttachedAuras and not slotNumberChecked:
+								self.wndItem.DeactivateSlot(i)
+								self.listAttachedAuras.remove(slotNumber)
+
+				if app.ENABLE_SASH_SYSTEM:
+					for j in xrange(sash.WINDOW_MAX_MATERIALS):
+						(isHere, iCell) = sash.GetAttachedItem(j)
+						if isHere:
+							if iCell == slotNumber:
+								self.wndItem.ActivateSlot(i, (36.00 / 255.0), (222.00 / 255.0), (3.00 / 255.0), 1.0)
+								if not slotNumber in self.listAttachedSashs:
+									self.listAttachedSashs.append(slotNumber)
+
+								slotNumberChecked = 1
+						else:
+							if slotNumber in self.listAttachedSashs and not slotNumberChecked:
+								self.wndItem.DeactivateSlot(i)
+								self.listAttachedSashs.remove(slotNumber)
+
+		self.wndItem.RefreshSlot()
+
+		# if self.wndBelt:
+			# self.wndBelt.RefreshSlot()
+
+	def RefreshEquipSlotWindow(self):
+		getItemVNum=player.GetItemIndex
+		getItemCount=player.GetItemCount
+		setItemVNum=self.wndEquip.SetItemSlot
+		for i in xrange(player.EQUIPMENT_PAGE_COUNT):
+			slotNumber = player.EQUIPMENT_SLOT_START + i
+			itemCount = getItemCount(slotNumber)
+			if itemCount <= 1:
+				itemCount = 0
+			setItemVNum(slotNumber, getItemVNum(slotNumber), itemCount)
+		if app.ENABLE_NEW_EQUIPMENT_SYSTEM:
+			for i in xrange(player.NEW_EQUIPMENT_SLOT_COUNT):
+				slotNumber = player.NEW_EQUIPMENT_SLOT_START + i
+				itemCount = getItemCount(slotNumber)
+				if itemCount <= 1:
+					itemCount = 0
+				setItemVNum(slotNumber, getItemVNum(slotNumber), itemCount)
+
+				print "ENABLE_NEW_EQUIPMENT_SYSTEM", slotNumber, itemCount, getItemVNum(slotNumber)
+				
+		for i in xrange(item.COSTUME_SLOT_COUNT):
+			slotNumber = item.COSTUME_SLOT_START + i
+			self.wndCostume.SetItemSlot(slotNumber, getItemVNum(slotNumber), 0)
+			self.wndEquip.SetItemSlot(slotNumber, getItemVNum(slotNumber), 0)
+			self.wndTalisman.SetItemSlot(slotNumber, getItemVNum(slotNumber), 0)
+			self.wndSecondary.SetItemSlot(slotNumber, getItemVNum(slotNumber), 0)
+			self.wndEffect.SetItemSlot(slotNumber, getItemVNum(slotNumber), 0)
+			self.wndSebnem.SetItemSlot(slotNumber, getItemVNum(slotNumber), 0)
+			self.wndMarka.SetItemSlot(slotNumber, getItemVNum(slotNumber), 0)
+			self.wndCostume.SetItemSlot(item.EQUIPMENT_PET, getItemVNum(item.EQUIPMENT_PET), 0)
+			self.wndEffect.SetItemSlot(item.EQUIPMENT_GLOVE, getItemVNum(item.EQUIPMENT_GLOVE), 0)
+			self.wndTalisman.SetItemSlot(item.EQUIPMENT_Element, getItemVNum(item.EQUIPMENT_Element), 0)
+			self.wndCostume.SetItemSlot(item.COSTUME_SLOT_RING_SOCKET, getItemVNum(item.COSTUME_SLOT_RING_SOCKET), 0)
+			
+
+		self.wndEquip.RefreshSlot()
+		
+
+
+
+	def RefreshItemSlot(self):
+		self.RefreshBagSlotWindow()
+		self.RefreshEquipSlotWindow()
+
+	def SetItemToolTip(self, tooltipItem):
+		self.tooltipItem = tooltipItem
+
+	def SellItem(self):
+		if app.__ENABLE_NEW_OFFLINESHOP__:
+			if uinewofflineshop.IsBuildingShop() and uinewofflineshop.IsSaleSlot(player.INVENTORY, self.sellingSlotNumber):
+				chat.AppendChat(chat.CHAT_TYPE_INFO, localeInfo.OFFLINESHOP_CANT_SELECT_ITEM_DURING_BUILING)
+				return
+
+		if self.sellingSlotitemIndex == player.GetItemIndex(self.sellingSlotNumber):
+			if self.sellingSlotitemCount == player.GetItemCount(self.sellingSlotNumber):
+				## 용혼석도 팔리게 하는 기능 추가하면서 인자 type 추가
+				net.SendShopSellPacketNew(self.sellingSlotNumber, self.questionDialog.count, player.INVENTORY)
+				snd.PlaySound("sound/ui/money.wav")
+		self.OnCloseQuestionDialog()
+
+	def OnDetachMetinFromItem(self):
+		if None == self.questionDialog:
+			return
+			
+		#net.SendItemUseToItemPacket(self.questionDialog.sourcePos, self.questionDialog.targetPos)		
+		self.__SendUseItemToItemPacket(self.questionDialog.sourcePos, self.questionDialog.targetPos)
+		self.OnCloseQuestionDialog()
+
+	def OnCloseQuestionDialog(self):
+		if not self.questionDialog:
+			return
+		
+		self.questionDialog.Close()
+		self.questionDialog = None
+		constInfo.SET_ITEM_QUESTION_DIALOG_STATUS(0)
+		
+	def TasEkle(self):
+		self.__SendUseItemToItemPacket(self.questionDialog.src, self.questionDialog.dst)
+		self.OnCloseQuestionDialog()	
+
+	## Slot Event
+	def SelectEmptySlot(self, selectedSlotPos):
+		if constInfo.GET_ITEM_QUESTION_DIALOG_STATUS() == 1:
+			return
+
+		selectedSlotPos = self.__InventoryLocalSlotPosToGlobalSlotPos(selectedSlotPos)
+
+		if mouseModule.mouseController.isAttached():
+
+			attachedSlotType = mouseModule.mouseController.GetAttachedType()
+			attachedSlotPos = mouseModule.mouseController.GetAttachedSlotNumber()
+			attachedItemCount = mouseModule.mouseController.GetAttachedItemCount()
+			attachedItemIndex = mouseModule.mouseController.GetAttachedItemIndex()
+			attachedCount = mouseModule.mouseController.GetAttachedItemCount()
+			if app.__ENABLE_NEW_OFFLINESHOP__:
+				if uinewofflineshop.IsBuildingShop() and uinewofflineshop.IsSaleSlot(player.SlotTypeToInvenType(attachedSlotType),attachedSlotPos):
+					chat.AppendChat(chat.CHAT_TYPE_INFO, localeInfo.OFFLINESHOP_CANT_SELECT_ITEM_DURING_BUILING)
+					return
+			topluAyrimMi = mouseModule.mouseController.TopluAyrimMi()
+			
+			if player.SLOT_TYPE_INVENTORY == attachedSlotType:
+				itemCount = player.GetItemCount(attachedSlotPos)
+				#attachedCount = mouseModule.mouseController.GetAttachedItemCount()
+				#self.__SendMoveItemPacket(attachedSlotPos, selectedSlotPos, attachedCount, topluAyrimMi)
+				self.__SendMoveItemPacket(attachedSlotPos, selectedSlotPos, attachedCount, attachedSlotType, player.SLOT_TYPE_INVENTORY, topluAyrimMi)
+
+				if item.IsRefineScroll(attachedItemIndex):
+					self.wndItem.SetUseMode(False)
+
+			elif app.ENABLE_SWITCHBOT and player.SLOT_TYPE_SWITCHBOT == attachedSlotType:
+				attachedCount = mouseModule.mouseController.GetAttachedItemCount()
+				net.SendItemMovePacket(player.SWITCHBOT, attachedSlotPos, player.INVENTORY, selectedSlotPos, attachedCount)
+
+
+			elif player.SLOT_TYPE_PRIVATE_SHOP == attachedSlotType:
+				mouseModule.mouseController.RunCallBack("INVENTORY")
+
+			elif player.SLOT_TYPE_OFFLINE_SHOP == attachedSlotType:
+				mouseModule.mouseController.RunCallBack("INVENTORY")
+			elif player.SLOT_TYPE_SHOP == attachedSlotType:
+				net.SendShopBuyPacket(attachedSlotPos)
+
+			elif player.SLOT_TYPE_SAFEBOX == attachedSlotType:
+
+				if player.ITEM_MONEY == attachedItemIndex:
+					net.SendSafeboxWithdrawMoneyPacket(mouseModule.mouseController.GetAttachedItemCount())
+					snd.PlaySound("sound/ui/money.wav")
+
+				elif player.ITEM_CHEQUE == attachedItemIndex:
+					# net.SendSafeboxWithdrawMoneyPacket(mouseModule.mouseController.GetAttachedItemCount())
+					snd.PlaySound("sound/ui/money.wav")
+				else:
+					net.SendSafeboxCheckoutPacket(attachedSlotPos, selectedSlotPos)
+
+			elif player.SLOT_TYPE_MALL == attachedSlotType:
+				net.SendMallCheckoutPacket(attachedSlotPos, selectedSlotPos)
+
+			elif app.ENABLE_SPECIAL_STORAGE and player.SLOT_TYPE_UPGRADE_INVENTORY == attachedSlotType:
+				net.SendSpecialMovePacket(player.UPGRADE_INVENTORY, attachedSlotPos, selectedSlotPos, attachedCount)
+			elif app.ENABLE_SPECIAL_STORAGE and player.SLOT_TYPE_STONE_INVENTORY == attachedSlotType:
+				net.SendSpecialMovePacket(player.STONE_INVENTORY, attachedSlotPos, selectedSlotPos, attachedCount)
+			elif app.ENABLE_SPECIAL_STORAGE and player.SLOT_TYPE_CHEST_INVENTORY == attachedSlotType:
+				net.SendSpecialMovePacket(player.CHEST_INVENTORY, attachedSlotPos, selectedSlotPos, attachedCount)
+			elif app.ENABLE_SPECIAL_STORAGE and player.SLOT_TYPE_ATTR_INVENTORY == attachedSlotType:
+				net.SendSpecialMovePacket(player.ATTR_INVENTORY, attachedSlotPos, selectedSlotPos, attachedCount)
+			mouseModule.mouseController.DeattachObject()
+
+	def SelectItemSlot(self, itemSlotIndex):
+		if constInfo.GET_ITEM_QUESTION_DIALOG_STATUS() == 1:
+			return
+
+		itemSlotIndex = self.__InventoryLocalSlotPosToGlobalSlotPos(itemSlotIndex)
+
+		if mouseModule.mouseController.isAttached():
+			attachedSlotType = mouseModule.mouseController.GetAttachedType()
+			attachedSlotPos = mouseModule.mouseController.GetAttachedSlotNumber()
+			attachedItemVID = mouseModule.mouseController.GetAttachedItemIndex()
+
+			if app.ENABLE_SPECIAL_STORAGE:
+				if player.SLOT_TYPE_INVENTORY == attachedSlotType or player.SLOT_TYPE_STONE_INVENTORY == attachedSlotType:
+					self.__DropSrcItemToDestItemInInventory(attachedItemVID, attachedSlotPos, itemSlotIndex)
+			else:
+				if player.SLOT_TYPE_INVENTORY == attachedSlotType:
+					self.__DropSrcItemToDestItemInInventory(attachedItemVID, attachedSlotPos, itemSlotIndex)
+			mouseModule.mouseController.DeattachObject()
+		else:
+			curCursorNum = app.GetCursor()
+			
+			if app.ENABLE_SHOW_CHEST_DROP:
+				ItemVNum = player.GetItemIndex(itemSlotIndex)
+				item.SelectItem(ItemVNum)
+					
+				if item.GetItemType() == item.ITEM_TYPE_GIFTBOX:
+					if app.IsPressed(app.DIK_LCONTROL):
+						if self.interface:
+							if self.interface.dlgChestDrop:
+								if not self.interface.dlgChestDrop.IsShow():
+									self.interface.dlgChestDrop.Open(itemSlotIndex)
+									net.SendChestDropInfo(itemSlotIndex, player.INVENTORY)
+									return
+			
+			if app.SELL == curCursorNum:
+				self.__SellItem(itemSlotIndex)
+				
+			elif app.BUY == curCursorNum:
+				chat.AppendChat(chat.CHAT_TYPE_INFO, localeInfo.SHOP_BUY_INFO)
+
+			elif app.IsPressed(app.DIK_LALT):
+				link = player.GetItemLink(itemSlotIndex)
+				ime.PasteString(link)
+
+			elif app.IsPressed(app.DIK_LSHIFT):
+				itemCount = player.GetItemCount(itemSlotIndex)
+				
+				if itemCount > 1:
+					self.dlgPickItem.SetTitleName(localeInfo.PICK_ITEM_TITLE)
+					self.dlgPickItem.SetAcceptEvent(ui.__mem_func__(self.OnPickItem))
+					self.dlgPickItem.Open(itemCount)
+					self.dlgPickItem.itemGlobalSlotIndex = itemSlotIndex
+				#else:
+					#selectedItemVNum = player.GetItemIndex(itemSlotIndex)
+					#mouseModule.mouseController.AttachObject(self, player.SLOT_TYPE_INVENTORY, itemSlotIndex, selectedItemVNum)
+
+			elif app.IsPressed(app.DIK_LCONTROL):
+				itemIndex = player.GetItemIndex(itemSlotIndex)
+
+				if True == item.CanAddToQuickSlotItem(itemIndex):
+					player.RequestAddToEmptyLocalQuickSlot(player.SLOT_TYPE_INVENTORY, itemSlotIndex)
+				else:
+					chat.AppendChat(chat.CHAT_TYPE_INFO, localeInfo.QUICKSLOT_REGISTER_DISABLE_ITEM)
+
+			else:
+				selectedItemVNum = player.GetItemIndex(itemSlotIndex)
+				itemCount = player.GetItemCount(itemSlotIndex)
+				mouseModule.mouseController.AttachObject(self, player.SLOT_TYPE_INVENTORY, itemSlotIndex, selectedItemVNum, itemCount)
+
+				if self.__IsUsableItemToItem(selectedItemVNum, itemSlotIndex):
+					self.wndItem.SetUseMode(True)
+				else:
+					self.wndItem.SetUseMode(False)
+
+				snd.PlaySound("sound/ui/pick.wav")
+
+	if app.ENABLE_NEW_PET_SYSTEM:
+		def UseTransportBox(self):
+			self.__SendUseItemToItemPacket(self.questionDialog.src, self.questionDialog.dst)
+			self.OnCloseQuestionDialog()
+
+		def UseProtein(self):
+			self.__SendUseItemToItemPacket(self.questionDialog.src, self.questionDialog.dst)
+			self.OnCloseQuestionDialog()
+
+	def __DropSrcItemToDestItemInInventory(self, srcItemVID, srcItemSlotPos, dstItemSlotPos):
+		if srcItemSlotPos == dstItemSlotPos and not item.IsMetin(srcItemVID):
+			return
+
+		if app.__ENABLE_NEW_OFFLINESHOP__:
+			if uinewofflineshop.IsBuildingShop() and (uinewofflineshop.IsSaleSlot(player.INVENTORY, srcItemSlotPos) or uinewofflineshop.IsSaleSlot(player.INVENTORY , dstItemSlotPos)):
+				chat.AppendChat(chat.CHAT_TYPE_INFO, localeInfo.OFFLINESHOP_CANT_SELECT_ITEM_DURING_BUILING)
+				return
+
+		item.SelectItem(srcItemVID)
+		if item.ITEM_TYPE_USE == item.GetItemType() and item.GetItemSubType() == item.USE_COSTUME_MOUNT_SKIN:
+			dstItemVNum = player.GetItemIndex(dstItemSlotPos)
+			item.SelectItem(dstItemVNum)
+			if item.ITEM_TYPE_COSTUME == item.GetItemType() and item.COSTUME_TYPE_MOUNT == item.GetItemSubType():	
+				self.__SendUseItemToItemPacket(srcItemSlotPos, dstItemSlotPos)
+
+		if app.ENABLE_KOSTUMPARLA and int(srcItemVID) == 49440:
+			self.AddCostumEffect(srcItemSlotPos, dstItemSlotPos)
+
+		if int(srcItemVID) == 72749:
+			self.EvolutionItem(srcItemSlotPos, dstItemSlotPos)
+			self.wndItem.SetUseMode(False)
+
+		if app.ENABLE_NEW_PET_SYSTEM:
+			if srcItemVID >= 55701 and srcItemVID <= 55710 and player.GetItemIndex(dstItemSlotPos) == 55002:
+				self.questionDialog = uiCommon.QuestionDialog()
+				self.questionDialog.SetText(localeInfo.PET_SYSTEM_ADD_BOX_PET)
+				self.questionDialog.SetAcceptEvent(ui.__mem_func__(self.UseTransportBox))
+				self.questionDialog.SetCancelEvent(ui.__mem_func__(self.OnCloseQuestionDialog))
+				self.questionDialog.Open()
+				self.questionDialog.src = srcItemSlotPos
+				self.questionDialog.dst = dstItemSlotPos
+				return
+
+			if player.GetItemIndex(dstItemSlotPos) >= 55701 and player.GetItemIndex(dstItemSlotPos) <= 55710 and srcItemVID == 55008:
+				self.interface.OpenInputNameDialogPet(dstItemSlotPos)
+				return
+
+			if srcItemVID == 55001 and player.GetItemIndex(dstItemSlotPos) >= 55701 and player.GetItemIndex(dstItemSlotPos) <= 55710:
+				self.questionDialog = uiCommon.QuestionDialog()
+				self.questionDialog.SetText(localeInfo.PET_SYSTEM_FEED_PROTEIN)
+				self.questionDialog.SetAcceptEvent(ui.__mem_func__(self.UseProtein))
+				self.questionDialog.SetCancelEvent(ui.__mem_func__(self.OnCloseQuestionDialog))
+				self.questionDialog.Open()
+				self.questionDialog.src = srcItemSlotPos
+				self.questionDialog.dst = dstItemSlotPos
+				return
+
+			if srcItemVID == 55101 and player.GetItemIndex(dstItemSlotPos) >= 55701 and player.GetItemIndex(dstItemSlotPos) <= 55710:
+				self.questionDialog = uiCommon.QuestionDialog()
+				self.questionDialog.SetText(localeInfo.PET_SYSTEM_FEED_PROTEIN)
+				self.questionDialog.SetAcceptEvent(ui.__mem_func__(self.UseProtein))
+				self.questionDialog.SetCancelEvent(ui.__mem_func__(self.OnCloseQuestionDialog))
+				self.questionDialog.Open()
+				self.questionDialog.src = srcItemSlotPos
+				self.questionDialog.dst = dstItemSlotPos
+				return
+
+		if srcItemVID == 72720 or srcItemVID == 72721:
+			self.questionDialog = uiCommon.QuestionDialog()
+			self.questionDialog.SetText("Tas slotu eklemek istiyor musun?")
+			self.questionDialog.SetAcceptEvent(ui.__mem_func__(self.TasEkle))
+			self.questionDialog.SetCancelEvent(ui.__mem_func__(self.OnCloseQuestionDialog))
+			self.questionDialog.Open()
+			self.questionDialog.src = srcItemSlotPos
+			self.questionDialog.dst = dstItemSlotPos
+
+		elif item.IsRefineScroll(srcItemVID):
+			self.RefineItem(srcItemSlotPos, dstItemSlotPos)
+			self.wndItem.SetUseMode(False)
+
+		elif item.IsMetin(srcItemVID):
+			self.AttachMetinToItem(srcItemSlotPos, dstItemSlotPos)
+
+		elif item.IsDetachScroll(srcItemVID):
+			self.DetachMetinFromItem(srcItemSlotPos, dstItemSlotPos)
+
+		elif item.IsKey(srcItemVID):
+			self.__SendUseItemToItemPacket(srcItemSlotPos, dstItemSlotPos)
+
+		elif (player.GetItemFlags(srcItemSlotPos) & ITEM_FLAG_APPLICABLE) == ITEM_FLAG_APPLICABLE:
+			self.__SendUseItemToItemPacket(srcItemSlotPos, dstItemSlotPos)
+
+		elif item.GetUseType(srcItemVID) in self.USE_TYPE_TUPLE:
+			self.__SendUseItemToItemPacket(srcItemSlotPos, dstItemSlotPos)
+
+		elif item.IsUpgradeTimeScroll(srcItemVID):
+			self.AttachUpgradeTimeToItem(srcItemSlotPos, dstItemSlotPos)
+
+		else:
+			#snd.PlaySound("sound/ui/drop.wav")
+
+			## 이동시킨 곳이 장착 슬롯일 경우 아이템을 사용해서 장착 시킨다 - [levites]
+			if player.IsEquipmentSlot(dstItemSlotPos):
+
+				## 들고 있는 아이템이 장비일때만
+				if item.IsEquipmentVID(srcItemVID):
+					self.__UseItem(srcItemSlotPos)
+
+			else:
+				self.__SendMoveItemPacket(srcItemSlotPos, dstItemSlotPos, 0)
+				#net.SendItemMovePacket(srcItemSlotPos, dstItemSlotPos, 0)
+
+	def __SellItem(self, itemSlotPos, soruSorma = False):
+		if app.__ENABLE_NEW_OFFLINESHOP__:
+			if uinewofflineshop.IsBuildingShop():
+				chat.AppendChat(chat.CHAT_TYPE_INFO, localeInfo.OFFLINESHOP_CANT_SELECT_ITEM_DURING_BUILING)
+				return
+		
+		
+		if not player.IsEquipmentSlot(itemSlotPos):
+			self.sellingSlotNumber = itemSlotPos
+			itemIndex = player.GetItemIndex(itemSlotPos)
+			itemCount = player.GetItemCount(itemSlotPos)
+			
+			
+			self.sellingSlotitemIndex = itemIndex
+			self.sellingSlotitemCount = itemCount
+
+			item.SelectItem(itemIndex)
+			## 안티 플레그 검사 빠져서 추가
+			## 20140220
+			if item.IsAntiFlag(item.ANTIFLAG_SELL):
+				popup = uiCommon.PopupDialog()
+				popup.SetText(localeInfo.SHOP_CANNOT_SELL_ITEM)
+				popup.SetAcceptEvent(self.__OnClosePopupDialog)
+				popup.Open()
+				self.popup = popup
+				return
+				
+			if item.IsAntiFlag(item.ANTIFLAG_SELL_WITH_METIN):
+				popup = uiCommon.PopupDialog()
+				popup.SetText(localeInfo.SHOP_CANNOT_SELL_ITEM_ITEM)
+				popup.SetAcceptEvent(self.__OnClosePopupDialog)
+				popup.Open()
+				self.popup = popup
+				return
+			if soruSorma:
+				net.SendItemSellPacket(player.INVENTORY, itemSlotPos, itemCount)
+				snd.PlaySound("sound/ui/money.wav")
+				return
+
+			itemPrice = item.GetISellItemPrice()
+
+			if item.Is1GoldItem():
+				itemPrice = itemCount / itemPrice / 5
+			else:
+				itemPrice = itemPrice * itemCount / 5
+
+			item.GetItemName(itemIndex)
+			itemName = item.GetItemName()
+
+			self.questionDialog = uiCommon.QuestionDialog()
+			self.questionDialog.SetText(localeInfo.DO_YOU_SELL_ITEM(itemName, itemCount, itemPrice))
+			self.questionDialog.SetAcceptEvent(ui.__mem_func__(self.SellItem))
+			self.questionDialog.SetCancelEvent(ui.__mem_func__(self.OnCloseQuestionDialog))
+			self.questionDialog.Open()
+			self.questionDialog.count = itemCount
+		
+			constInfo.SET_ITEM_QUESTION_DIALOG_STATUS(1)
+
+	def __OnClosePopupDialog(self):
+		self.pop = None
+
+	def RefineItem(self, scrollSlotPos, targetSlotPos):
+		if app.__ENABLE_NEW_OFFLINESHOP__:
+			if uinewofflineshop.IsBuildingShop():
+				chat.AppendChat(chat.CHAT_TYPE_INFO, localeInfo.OFFLINESHOP_CANT_SELECT_ITEM_DURING_BUILING)
+				return
+
+		scrollIndex = player.GetItemIndex(scrollSlotPos)
+		targetIndex = player.GetItemIndex(targetSlotPos)
+
+		if player.REFINE_OK != player.CanRefine(scrollIndex, targetSlotPos):
+			return
+
+		if int(scrollIndex) == 25042:
+			constInfo.refine_probality_type = 1
+		elif int(scrollIndex) == 25043:
+			constInfo.refine_probality_type = 2
+		else:
+			constInfo.refine_probality_type = 0
+
+		if app.ENABLE_REFINE_RENEWAL:
+			constInfo.AUTO_REFINE_TYPE = 1
+			constInfo.AUTO_REFINE_DATA["ITEM"][0] = scrollSlotPos
+			constInfo.AUTO_REFINE_DATA["ITEM"][1] = targetSlotPos
+
+		###########################################################
+		self.__SendUseItemToItemPacket(scrollSlotPos, targetSlotPos)
+		#net.SendItemUseToItemPacket(scrollSlotPos, targetSlotPos)
+		return
+		###########################################################
+
+		###########################################################
+		#net.SendRequestRefineInfoPacket(targetSlotPos)
+		#return
+		###########################################################
+
+		result = player.CanRefine(scrollIndex, targetSlotPos)
+
+		if player.REFINE_ALREADY_MAX_SOCKET_COUNT == result:
+			#snd.PlaySound("sound/ui/jaeryun_fail.wav")
+			chat.AppendChat(chat.CHAT_TYPE_INFO, localeInfo.REFINE_FAILURE_NO_MORE_SOCKET)
+
+		elif player.REFINE_NEED_MORE_GOOD_SCROLL == result:
+			#snd.PlaySound("sound/ui/jaeryun_fail.wav")
+			chat.AppendChat(chat.CHAT_TYPE_INFO, localeInfo.REFINE_FAILURE_NEED_BETTER_SCROLL)
+
+		elif player.REFINE_CANT_MAKE_SOCKET_ITEM == result:
+			#snd.PlaySound("sound/ui/jaeryun_fail.wav")
+			chat.AppendChat(chat.CHAT_TYPE_INFO, localeInfo.REFINE_FAILURE_SOCKET_DISABLE_ITEM)
+
+		elif player.REFINE_NOT_NEXT_GRADE_ITEM == result:
+			#snd.PlaySound("sound/ui/jaeryun_fail.wav")
+			chat.AppendChat(chat.CHAT_TYPE_INFO, localeInfo.REFINE_FAILURE_UPGRADE_DISABLE_ITEM)
+
+		elif player.REFINE_CANT_REFINE_METIN_TO_EQUIPMENT == result:
+			chat.AppendChat(chat.CHAT_TYPE_INFO, localeInfo.REFINE_FAILURE_EQUIP_ITEM)
+
+		if player.REFINE_OK != result:
+			return
+
+		self.refineDialog.Open(scrollSlotPos, targetSlotPos)
+
+	def DetachMetinFromItem(self, scrollSlotPos, targetSlotPos):
+		scrollIndex = player.GetItemIndex(scrollSlotPos)
+		targetIndex = player.GetItemIndex(targetSlotPos)
+
+		if not player.CanDetach(scrollIndex, targetSlotPos):
+			if app.ENABLE_SASH_SYSTEM and app.ENABLE_AURA_SYSTEM:
+				item.SelectItem(scrollIndex)
+				if item.GetValue(0) == sash.CLEAN_ATTR_VALUE0:
+					chat.AppendChat(chat.CHAT_TYPE_INFO, localeInfo.SASH_FAILURE_CLEAN)
+				elif item.GetValue(0) == aura.CLEAN_ATTR_VALUE0:
+					chat.AppendChat(chat.CHAT_TYPE_INFO, localeInfo.AURA_FAILURE_CLEAN)
+				else:
+					chat.AppendChat(chat.CHAT_TYPE_INFO, localeInfo.REFINE_FAILURE_METIN_INSEPARABLE_ITEM)
+			elif not app.ENABLE_SASH_SYSTEM and app.ENABLE_AURA_SYSTEM:
+				item.SelectItem(scrollIndex)
+				if item.GetValue(0) == aura.CLEAN_ATTR_VALUE0:
+					chat.AppendChat(chat.CHAT_TYPE_INFO, localeInfo.AURA_FAILURE_CLEAN)
+				else:
+					chat.AppendChat(chat.CHAT_TYPE_INFO, localeInfo.REFINE_FAILURE_METIN_INSEPARABLE_ITEM)
+			elif app.ENABLE_SASH_SYSTEM and not app.ENABLE_AURA_SYSTEM:
+				item.SelectItem(scrollIndex)
+				if item.GetValue(0) == sash.CLEAN_ATTR_VALUE0:
+					chat.AppendChat(chat.CHAT_TYPE_INFO, localeInfo.SASH_FAILURE_CLEAN)
+				else:
+					chat.AppendChat(chat.CHAT_TYPE_INFO, localeInfo.REFINE_FAILURE_METIN_INSEPARABLE_ITEM)
+			else:
+				chat.AppendChat(chat.CHAT_TYPE_INFO, localeInfo.REFINE_FAILURE_METIN_INSEPARABLE_ITEM)
+			return
+
+		self.questionDialog = uiCommon.QuestionDialog()
+		self.questionDialog.SetText(localeInfo.REFINE_DO_YOU_SEPARATE_METIN)
+		if app.ENABLE_SASH_SYSTEM:
+			item.SelectItem(targetIndex)
+			if item.GetItemType() == item.ITEM_TYPE_COSTUME and item.GetItemSubType() == item.COSTUME_TYPE_SASH:
+				item.SelectItem(scrollIndex)
+				if item.GetValue(0) == sash.CLEAN_ATTR_VALUE0:
+					self.questionDialog.SetText(localeInfo.SASH_DO_YOU_CLEAN)
+		# if app.ENABLE_AURA_SYSTEM:
+			# item.SelectItem(targetIndex)
+			# if item.GetItemType() == item.ITEM_TYPE_COSTUME and item.GetItemSubType() == item.COSTUME_TYPE_AURA:
+				# item.SelectItem(scrollIndex)
+				# if item.GetValue(0) == aura.CLEAN_ATTR_VALUE0:
+					# self.questionDialog.SetText(localeInfo.AURA_DO_YOU_CLEAN)
+		# self.questionDialog.SetAcceptEvent(ui.__mem_func__(self.OnDetachMetinFromItem))
+		# self.questionDialog.SetCancelEvent(ui.__mem_func__(self.OnCloseQuestionDialog))
+		# self.questionDialog.Open()
+		# self.questionDialog.sourcePos = scrollSlotPos
+		# self.questionDialog.targetPos = targetSlotPos
+
+	def AttachMetinToItem(self, metinSlotPos, targetSlotPos):
+		if app.ENABLE_SPECIAL_STORAGE:
+			attachedSlotType = mouseModule.mouseController.GetAttachedType()
+			if player.INVENTORY == attachedSlotType:
+				metinIndex = player.GetItemIndex(metinSlotPos)
+			else:
+				metinIndex = player.GetItemIndex(player.STONE_INVENTORY, metinSlotPos)
+		else:
+			metinIndex = player.GetItemIndex(metinSlotPos)
+
+		targetIndex = player.GetItemIndex(targetSlotPos)
+
+		item.SelectItem(metinIndex)
+		itemName = item.GetItemName()
+
+		result = player.CanAttachMetin(metinIndex, targetSlotPos)
+
+		if player.ATTACH_METIN_NOT_MATCHABLE_ITEM == result:
+			chat.AppendChat(chat.CHAT_TYPE_INFO, localeInfo.REFINE_FAILURE_CAN_NOT_ATTACH(itemName))
+
+		if player.ATTACH_METIN_NO_MATCHABLE_SOCKET == result:
+			chat.AppendChat(chat.CHAT_TYPE_INFO, localeInfo.REFINE_FAILURE_NO_SOCKET(itemName))
+
+		elif player.ATTACH_METIN_NOT_EXIST_GOLD_SOCKET == result:
+			chat.AppendChat(chat.CHAT_TYPE_INFO, localeInfo.REFINE_FAILURE_NO_GOLD_SOCKET(itemName))
+
+		elif player.ATTACH_METIN_CANT_ATTACH_TO_EQUIPMENT == result:
+			chat.AppendChat(chat.CHAT_TYPE_INFO, localeInfo.REFINE_FAILURE_EQUIP_ITEM)
+
+		if player.ATTACH_METIN_OK != result:
+			return
+
+		self.attachMetinDialog.Open(metinSlotPos, targetSlotPos)
+
+	def OnUpdate(self):
+		if self.islemYapiliyor:
+			# suanMs=int(round(time.time() * 1000))
+			suanMs = app.GetTime()
+			if self.islemTuru == 0:
+				if self.sonIslemMs <= suanMs:
+					if (player.GetItemCount(self.tasinanWindow, self.bolunenPos) < self.bolunecekSayi):
+						net.SendItemMovePacket(self.tasinanWindow, self.bolunenPos, self.tasinacakWindow, self.baslangicPos + self.tasinanSayi, player.GetItemCount(self.tasinanWindow, self.bolunenPos))
+						self.islemYapiliyor = False
+						return
+					net.SendItemMovePacket(self.tasinanWindow, self.bolunenPos, self.tasinacakWindow, self.baslangicPos + self.tasinanSayi, self.bolunecekSayi)
+					self.tasinanSayi+=1
+					self.sonIslemMs = suanMs + 0.2
+					if self.tasinanSayi >= self.tasinacakSayi: self.islemYapiliyor = False
+					if self.islemBitisSuresi <= suanMs: self.islemYapiliyor = False
+		
+	def OverOutItem(self):
+		self.wndItem.SetUsableItem(False)
+		if None != self.tooltipItem:
+			self.tooltipItem.HideToolTip()
+
+	def OverInItem(self, overSlotPos):
+		overSlotPos = self.__InventoryLocalSlotPosToGlobalSlotPos(overSlotPos)
+		self.wndItem.SetUsableItem(False)
+
+		if mouseModule.mouseController.isAttached():
+			attachedItemType = mouseModule.mouseController.GetAttachedType()
+			if app.ENABLE_SPECIAL_STORAGE:
+				if player.SLOT_TYPE_INVENTORY == attachedItemType or player.SLOT_TYPE_STONE_INVENTORY == attachedItemType:
+					attachedSlotPos = mouseModule.mouseController.GetAttachedSlotNumber()
+					attachedItemVNum = mouseModule.mouseController.GetAttachedItemIndex()
+					if self.__CanUseSrcItemToDstItem(attachedItemVNum, attachedSlotPos, overSlotPos):
+						self.wndItem.SetUsableItem(True)
+						self.wndItem.SetUseMode(True)
+						self.ShowToolTip(overSlotPos)
+						return
+			else:
+				if player.SLOT_TYPE_INVENTORY == attachedItemType:
+					attachedSlotPos = mouseModule.mouseController.GetAttachedSlotNumber()
+					attachedItemVNum = mouseModule.mouseController.GetAttachedItemIndex()
+	
+					if self.__CanUseSrcItemToDstItem(attachedItemVNum, attachedSlotPos, overSlotPos):
+						self.wndItem.SetUsableItem(True)
+						self.ShowToolTip(overSlotPos)
+						return
+
+				
+		self.ShowToolTip(overSlotPos)
+
+
+	def __IsUsableItemToItem(self, srcItemVNum, srcSlotPos):
+		"다른 아이템에 사용할 수 있는 아이템인가?"
+
+		if app.ENABLE_NEW_PET_SYSTEM:
+			if srcItemVNum >= 55701 and srcItemVNum <= 55706:
+				return True
+
+			if srcItemVNum == 55001 or srcItemVNum == 55101:
+				return True
+
+			if srcItemVNum == 55008:
+				return True
+
+		if srcItemVNum == 55032:
+			return True	
+		if srcItemVNum == 70068:
+			return True
+
+		if srcItemVNum == 55030:
+			return True
+
+		if item.IsRefineScroll(srcItemVNum):
+			return True
+		elif item.IsMetin(srcItemVNum):
+			return True
+		elif item.IsDetachScroll(srcItemVNum):
+			return True
+		elif item.IsKey(srcItemVNum):
+			return True
+		elif (player.GetItemFlags(srcSlotPos) & ITEM_FLAG_APPLICABLE) == ITEM_FLAG_APPLICABLE:
+			return True
+		elif item.IsUpgradeTimeScroll(srcItemVNum):
+			return True
+		else:
+			if item.GetUseType(srcItemVNum) in self.USE_TYPE_TUPLE:
+				return True
+			
+		return False
+
+	def __CanEvolutionItem(self, srcitem, srcpos, dstSlotPos,silah=0):
+		dstItemVNum = player.GetItemIndex(dstSlotPos)
+		if dstItemVNum == 0:
+			return False
+		item.SelectItem(dstItemVNum)
+		itemType = item.GetItemType()
+		itemSubType = item.GetItemSubType()
+		if item.ITEM_TYPE_WEAPON == itemType and item.WEAPON_ARROW != itemSubType:
+			evopoint = player.GetItemEvolution(dstSlotPos)
+			if int(evopoint) < 5000:
+				return True
+		return False
+
+	def __CanUseSrcItemToDstItem(self, srcItemVNum, srcSlotPos, dstSlotPos):
+		"대상 아이템에 사용할 수 있는가?"
+
+		if app.ENABLE_NEW_PET_SYSTEM:
+			#Nakliye Kutusu
+			if srcItemVNum >= 55701 and  srcItemVNum <= 55710 and player.GetItemIndex(dstSlotPos) == 55002:			
+				return True
+
+			if srcItemVNum >= 82709 and  srcItemVNum <= 82790 and player.GetItemIndex(dstSlotPos) == 82706:			
+				return True
+
+			#Protein Lokması
+			if srcItemVNum == 55001 and player.GetItemIndex(dstSlotPos) >= 55701 and player.GetItemIndex(dstSlotPos) <= 55710:			
+				return True
+
+			#Pet ?sim ?zi
+			if srcItemVNum == 55008 and player.GetItemIndex(dstSlotPos) >= 55701 and player.GetItemIndex(dstSlotPos) <= 55710:			
+				return True
+
+			#Tanrısal Protein Lokması
+			if srcItemVNum == 55101 and player.GetItemIndex(dstSlotPos) >= 55701 and player.GetItemIndex(dstSlotPos) <= 55710:			
+				return True
+
+		if srcSlotPos == dstSlotPos and not item.IsMetin(srcItemVNum):
+			return False
+
+		elif item.IsRefineScroll(srcItemVNum):
+			if player.REFINE_OK == player.CanRefine(srcItemVNum, dstSlotPos):
+				return True
+				
+		if srcItemVNum == player.GetItemIndex(dstSlotPos):
+			if player.GetItemCount(dstSlotPos) < 200:
+				return True		
+		elif app.ENABLE_KOSTUMPARLA and int(srcItemVNum) == 49440:
+			if self.__CanAddCostumEffect(dstSlotPos) == True:
+				return True
+		elif srcItemVNum == 72749:
+			if self.__CanEvolutionItem(srcItemVNum,srcSlotPos,dstSlotPos) == True:
+				return True
+		elif item.IsMetin(srcItemVNum):
+			if player.ATTACH_METIN_OK == player.CanAttachMetin(srcItemVNum, dstSlotPos):
+				return True
+		elif item.IsDetachScroll(srcItemVNum):
+			if player.DETACH_METIN_OK == player.CanDetach(srcItemVNum, dstSlotPos):
+				return True
+		elif item.IsKey(srcItemVNum):
+			if player.CanUnlock(srcItemVNum, dstSlotPos):
+				return True
+		elif item.IsUpgradeTimeScroll(srcItemVNum):
+			item.SelectItem(player.GetItemIndex(dstSlotPos))
+			if item.GetItemType() == item.ITEM_TYPE_QUEST:
+				return True	
+		elif (player.GetItemFlags(srcSlotPos) & ITEM_FLAG_APPLICABLE) == ITEM_FLAG_APPLICABLE:
+			return True
+		else:
+			useType=item.GetUseType(srcItemVNum)
+
+			if "USE_CLEAN_SOCKET" == useType:
+				if self.__CanCleanBrokenMetinStone(dstSlotPos):
+					return True
+			elif "USE_CHANGE_ATTRIBUTE" == useType or "USE_CHANGE_ATTRIBUTE_ELEMENT" == useType or "USE_CHANGE_ATTRIBUTE_MOUNT" == useType:
+				if self.__CanChangeItemAttrList(dstSlotPos):
+					return True
+			elif "USE_ADD_ATTRIBUTE" == useType or "USE_ADD_ATTRIBUTE_ELEMENT" == useType or "USE_ADD_ATTRIBUTE_MOUNT" == useType:
+				if self.__CanAddItemAttr(dstSlotPos):
+					return True
+			elif "USE_ADD_ATTRIBUTE2" == useType:
+				if self.__CanAddItemAttr(dstSlotPos):
+					return True
+			elif "USE_ADD_ACCESSORY_SOCKET" == useType:
+				if self.__CanAddAccessorySocket(dstSlotPos):
+					return True
+			elif "USE_PUT_INTO_ACCESSORY_SOCKET" == useType:								
+				if self.__CanPutAccessorySocket(dstSlotPos, srcItemVNum):
+					return TRUE;
+			elif "USE_PUT_INTO_BELT_SOCKET" == useType:								
+				dstItemVNum = player.GetItemIndex(dstSlotPos)
+				print "USE_PUT_INTO_BELT_SOCKET", srcItemVNum, dstItemVNum
+
+				item.SelectItem(dstItemVNum)
+		
+				if item.ITEM_TYPE_BELT == item.GetItemType():
+					return True
+			elif useType == "USE_COSTUME_ENCHANT" or useType == "USE_COSTUME_TRANSFORM":
+				if not app.ENABLE_COSTUME_ATTR_SYSTEM:
+					return FALSE
+				
+				dstItemVNum = player.GetItemIndex(dstSlotPos)
+				item.SelectItem(dstItemVNum)
+				if item.GetItemType() == item.ITEM_TYPE_COSTUME:
+					return TRUE
+	
+
+		return False
+
+
+	def AttachUpgradeTimeToItem(self, srcSlotPos, dstSlotPos):
+		dstItemVNum = player.GetItemIndex(dstSlotPos)
+		if dstItemVNum == 0:
+			return False
+				
+		item.SelectItem(dstItemVNum)
+			
+		if item.ITEM_TYPE_QUEST != item.GetItemType():
+			return False
+				
+		item_name = item.GetItemName()	
+		self.questionDialog = uiCommon.QuestionDialog()
+		self.questionDialog.SetText(localeInfo.UPGRADE_TIME_ITEM % (item_name))
+		self.questionDialog.SetAcceptEvent(ui.__mem_func__(self.OnAcceptUpgradeTimeItem))
+		self.questionDialog.SetCancelEvent(ui.__mem_func__(self.OnCloseQuestionDialog))
+		self.questionDialog.Open()
+		self.questionDialog.sourcePos = srcSlotPos
+		self.questionDialog.targetPos = dstSlotPos
+			
+	def OnAcceptUpgradeTimeItem(self):
+		if self.questionDialog == None:
+			return
+				
+		self.__SendUseItemToItemPacket(self.questionDialog.sourcePos, self.questionDialog.targetPos)
+		self.OnCloseQuestionDialog()
+
+
+	def __CanCleanBrokenMetinStone(self, dstSlotPos):
+		dstItemVNum = player.GetItemIndex(dstSlotPos)
+		if dstItemVNum == 0:
+			return False
+
+		item.SelectItem(dstItemVNum)
+		
+		if item.ITEM_TYPE_WEAPON != item.GetItemType():
+			return False
+
+		for i in xrange(player.METIN_SOCKET_MAX_NUM):
+			if player.GetItemMetinSocket(dstSlotPos, i) == constInfo.ERROR_METIN_STONE:
+				return True
+
+		return False
+
+	def __CanChangeItemAttrList(self, dstSlotPos):
+		dstItemVNum = player.GetItemIndex(dstSlotPos)
+		if dstItemVNum == 0:
+			return False
+
+		item.SelectItem(dstItemVNum)
+		
+		if not item.GetItemType() in (item.ITEM_TYPE_WEAPON, item.ITEM_TYPE_ARMOR):	 
+			return False
+
+		for i in xrange(player.METIN_SOCKET_MAX_NUM):
+			if player.GetItemAttribute(dstSlotPos, i) != 0:
+				return True
+
+		return False
+
+	def __CanPutAccessorySocket(self, dstSlotPos, mtrlVnum):
+		dstItemVNum = player.GetItemIndex(dstSlotPos)
+		if dstItemVNum == 0:
+			return False
+
+		item.SelectItem(dstItemVNum)
+
+		if item.GetItemType() != item.ITEM_TYPE_ARMOR:
+			return False
+
+		if not item.GetItemSubType() in (item.ARMOR_WRIST, item.ARMOR_NECK, item.ARMOR_EAR):
+			return False
+
+		curCount = player.GetItemMetinSocket(dstSlotPos, 0)
+		maxCount = player.GetItemMetinSocket(dstSlotPos, 1)
+
+		if (mtrlVnum >= 50640 and mtrlVnum <= 50662) and mtrlVnum != 50663:
+			if mtrlVnum != constInfo.GET_ACCESSORY_MATERIAL_VNUM2(dstItemVNum, item.GetItemSubType()):
+				return False
+		else:
+			if mtrlVnum != constInfo.GET_ACCESSORY_MATERIAL_VNUM(dstItemVNum, item.GetItemSubType()):
+				return False
+		
+		if curCount>=maxCount:
+			return False
+
+		return True
+
+	def __CanAddAccessorySocket(self, dstSlotPos):
+		dstItemVNum = player.GetItemIndex(dstSlotPos)
+		if dstItemVNum == 0:
+			return False
+
+		item.SelectItem(dstItemVNum)
+
+		if item.GetItemType() != item.ITEM_TYPE_ARMOR:
+			return False
+
+		if not item.GetItemSubType() in (item.ARMOR_WRIST, item.ARMOR_NECK, item.ARMOR_EAR):
+			return False
+
+		curCount = player.GetItemMetinSocket(dstSlotPos, 0)
+		maxCount = player.GetItemMetinSocket(dstSlotPos, 1)
+		
+		ACCESSORY_SOCKET_MAX_SIZE = 3
+		if maxCount >= ACCESSORY_SOCKET_MAX_SIZE:
+			return False
+
+		return True
+
+	if app.ENABLE_KOSTUMPARLA:
+		def __CanAddCostumEffect(self, dstSlotPos):
+			dstItemVNum = player.GetItemIndex(dstSlotPos)
+			if dstItemVNum == 0:
+				return False
+
+			item.SelectItem(dstItemVNum)
+			if item.ITEM_TYPE_COSTUME != item.GetItemType():
+				return False
+			if item.COSTUME_TYPE_BODY != item.GetItemSubType():
+				return False
+			return True
+
+		def AddCostumEffect(self, metinSlotPos, targetSlotPos):
+			if player.IsEquipmentSlot(targetSlotPos):
+				return
+
+			if self.__CanAddCostumEffect(targetSlotPos) == False:
+				chat.AppendChat(chat.CHAT_TYPE_INFO, localeInfo.COSTUME_EVO_ONLY_COSTUMES)
+				return
+
+			if not self.costumeffect.IsShow():
+				self.costumeffect.SlotPos(metinSlotPos, targetSlotPos)
+				self.costumeffect.Open()
+
+	def __CanAddItemAttr(self, dstSlotPos):
+		dstItemVNum = player.GetItemIndex(dstSlotPos)
+		if dstItemVNum == 0:
+			return False
+
+		item.SelectItem(dstItemVNum)
+		
+		if not item.GetItemType() in (item.ITEM_TYPE_WEAPON, item.ITEM_TYPE_ARMOR):	 
+			return False
+			
+		attrCount = 0
+		for i in xrange(player.METIN_SOCKET_MAX_NUM):
+			if player.GetItemAttribute(dstSlotPos, i) != 0:
+				attrCount += 1
+
+		if attrCount<4:
+			return True
+								
+		return False
+	
+	def NPCAC(self):
+		self.interface.NPCAC()
+		
+	def StoneSell(self):
+		self.interface.StoneSell()	
+		
+	def Dungeon(self):
+		self.interface.OpenDungeonTimer()	
+		
+	def SpecialSt(self):
+		self.interface.ToggleSpecialStorageWindow()
+
+	#def TicArama(self):
+		#self.interface.OpenSearchBox()
+	
+	def BiyoEkran(self):
+		self.interface.OpenBiyologTable()
+	
+
+	def EfsunBotu(self):
+		self.interface.ToggleSwitchbotWindow()
+	
+	def ShowToolTip(self, slotIndex):
+		if None != self.tooltipItem:
+			self.tooltipItem.SetInventoryItem(slotIndex)
+
+			if app.__ENABLE_NEW_OFFLINESHOP__:
+				if uinewofflineshop.IsBuildingShop() or uinewofflineshop.IsBuildingAuction():
+					self.__AddTooltipSaleMode(slotIndex)
+	
+	
+	if app.__ENABLE_NEW_OFFLINESHOP__:
+		def __AddTooltipSaleMode(self, slot):
+			if player.IsEquipmentSlot(slot):
+				return
+
+			itemIndex = player.GetItemIndex(slot)
+			if itemIndex !=0:
+				item.SelectItem(itemIndex)
+				if item.IsAntiFlag(item.ANTIFLAG_MYSHOP) or item.IsAntiFlag(item.ANTIFLAG_GIVE):
+					return
+				
+				self.tooltipItem.AddRightClickForSale()
+	
+	
+	
+	def OnTop(self):
+		if None != self.tooltipItem:
+			self.tooltipItem.SetTop()
+
+	def OnPressEscapeKey(self):
+		self.Close()
+		return True
+		
+	def EvolutionItem(self, scrollSlotPos, targetSlotPos):
+		scrollIndex = player.GetItemIndex(scrollSlotPos)
+		targetIndex = player.GetItemIndex(targetSlotPos)
+		if int(targetSlotPos) > 179:
+			return
+
+		item.SelectItem(targetIndex)
+		if int(scrollIndex) == 72749: #item vnum
+			if item.GetItemType() != item.ITEM_TYPE_WEAPON:
+				chat.AppendChat(chat.CHAT_TYPE_INFO, translate.sadecesilah)
+				return
+
+			evo = player.GetItemEvolution(targetSlotPos)
+			if int(evo) < 4:
+				self.EvolutionDialog.Destroy()
+				self.EvolutionDialog = uiEvolution.EvolutionDialog()
+				self.EvolutionDialog.Open(scrollSlotPos, targetSlotPos)
+				return
+
+	def UseItemSlot(self, slotIndex):
+		curCursorNum = app.GetCursor()
+		if app.SELL == curCursorNum:
+			return
+
+		if constInfo.GET_ITEM_QUESTION_DIALOG_STATUS():
+			return
+		
+		
+		if app.__ENABLE_NEW_OFFLINESHOP__:
+			if uinewofflineshop.IsBuildingShop():
+				globalSlot 	= self.__InventoryLocalSlotPosToGlobalSlotPos(slotIndex)
+				itemIndex 	= player.GetItemIndex(globalSlot)
+				
+				item.SelectItem(itemIndex)
+				
+				if not item.IsAntiFlag(item.ANTIFLAG_GIVE) and not item.IsAntiFlag(item.ANTIFLAG_MYSHOP):
+					offlineshop.ShopBuilding_AddInventoryItem(globalSlot)
+				
+				else:
+					chat.AppendChat(chat.CHAT_TYPE_INFO, localeInfo.OFFLINESHOP_CANT_SELECT_ITEM_DURING_BUILING)
+				
+				return
+
+			elif uinewofflineshop.IsBuildingAuction():
+				globalSlot = self.__InventoryLocalSlotPosToGlobalSlotPos(slotIndex)
+				itemIndex = player.GetItemIndex(globalSlot)
+
+				item.SelectItem(itemIndex)
+
+				if not item.IsAntiFlag(item.ANTIFLAG_GIVE) and not item.IsAntiFlag(item.ANTIFLAG_MYSHOP):
+					offlineshop.AuctionBuilding_AddInventoryItem(globalSlot)
+				else:
+					chat.AppendChat(chat.CHAT_TYPE_INFO, localeInfo.OFFLINESHOP_CANT_SELECT_ITEM_DURING_BUILING)
+
+				return
+
+		slotIndex = self.__InventoryLocalSlotPosToGlobalSlotPos(slotIndex)
+
+		if app.IsPressed(app.DIK_LCONTROL) and app.IsPressed(app.DIK_X):
+			self.__SellItem(slotIndex, True)
+			return
+		if app.ENABLE_DRAGON_SOUL_SYSTEM:
+			if self.wndDragonSoulRefine.IsShow():
+				self.wndDragonSoulRefine.AutoSetItem((player.INVENTORY, slotIndex), 1)
+
+		if constInfo.ITEM_REMOVE_WINDOW_STATUS == 1:
+			self.KygnItemSil.InventoryRightClick(slotIndex, 0)
+			return
+
+		if app.ITEM_CHECKINOUT_UPDATE:
+			if self.wndSafeBox.IsShow() and slotIndex < player.EQUIPMENT_SLOT_START:
+				net.SendSafeboxCheckinPacket(slotIndex)
+				return
+			if exchange.isTrading() and slotIndex < player.EQUIPMENT_SLOT_START:
+				net.SendExchangeItemAddPacket(player.INVENTORY, slotIndex, -1)
+				return
+				
+
+		if app.ENABLE_NEW_PET_SYSTEM:
+			if self.isShowPetFeedWindow():
+				itemVNum = player.GetItemIndex(slotIndex)
+				itemCount = player.GetItemCount(slotIndex)
+				self.wndPetFeedWindow.AddPetItemFromInventory(slotIndex, itemVNum, itemCount)
+				return
+		if app.ENABLE_AURA_SYSTEM:
+			itemVNum = player.GetItemIndex(slotIndex)
+			if self.isShowAuraWindow():
+				if itemVNum >= 21900 and itemVNum <= 21999:
+					return
+				aura.Add(player.INVENTORY, slotIndex, 255)
+				return
+		if app.ENABLE_SASH_SYSTEM:
+			if self.isShowSashWindow():
+				sash.Add(player.INVENTORY, slotIndex, 255)
+				return
+		self.__UseItem(slotIndex)
+		mouseModule.mouseController.DeattachObject()
+		self.OverOutItem()
+
+	def __UseItem(self, slotIndex):
+		if app.__ENABLE_NEW_OFFLINESHOP__:
+			if uinewofflineshop.IsBuildingShop() and uinewofflineshop.IsSaleSlot(player.INVENTORY, slotIndex):
+				chat.AppendChat(chat.CHAT_TYPE_INFO, localeInfo.OFFLINESHOP_CANT_SELECT_ITEM_DURING_BUILING)
+				return
+		ItemVNum = player.GetItemIndex(slotIndex)
+		item.SelectItem(ItemVNum)
+		if item.IsFlag(item.ITEM_FLAG_CONFIRM_WHEN_USE):
+			self.questionDialog = uiCommon.QuestionDialog()
+			self.questionDialog.SetText(localeInfo.INVENTORY_REALLY_USE_ITEM)
+			self.questionDialog.SetAcceptEvent(ui.__mem_func__(self.__UseItemQuestionDialog_OnAccept))
+			self.questionDialog.SetCancelEvent(ui.__mem_func__(self.__UseItemQuestionDialog_OnCancel))
+			self.questionDialog.Open()
+			self.questionDialog.slotIndex = slotIndex
+			constInfo.SET_ITEM_QUESTION_DIALOG_STATUS(1)
+		elif (ItemVNum >= 55010 and ItemVNum <= 55027) or (ItemVNum >= 55034 and ItemVNum <= 55039) and app.ENABLE_NEW_PET_SYSTEM:
+			self.questionDialog = uiCommon.QuestionDialog()
+			self.questionDialog.SetText(localeInfo.INVENTORY_REALLY_USE_BOOK)
+			self.questionDialog.SetAcceptEvent(ui.__mem_func__(self.__UseItemQuestionDialog_OnAccept))
+			self.questionDialog.SetCancelEvent(ui.__mem_func__(self.__UseItemQuestionDialog_OnCancel))
+			self.questionDialog.Open()
+			self.questionDialog.slotIndex = slotIndex
+			constInfo.SET_ITEM_QUESTION_DIALOG_STATUS(1)
+		elif item.GetItemType() == item.ITEM_TYPE_GIFTBOX:
+			if app.IsPressed(app.DIK_LCONTROL):
+				self.__SendUseItemAllPacket(slotIndex)
+			else:
+				self.__SendUseItemPacket(slotIndex)	
+		else:
+			self.__SendUseItemPacket(slotIndex)
+			#net.SendItemUsePacket(slotIndex)	
+
+	def __UseItemQuestionDialog_OnCancel(self):
+		self.OnCloseQuestionDialog()
+
+	def __UseItemQuestionDialog_OnAccept(self):
+		self.__SendUseItemPacket(self.questionDialog.slotIndex)
+		self.OnCloseQuestionDialog()		
+
+	def __SendUseItemToItemPacket(self, srcSlotPos, dstSlotPos):
+		# 개인상점 열고 있는 동안 아이템 사용 방지
+		if uiPrivateShopBuilder.IsBuildingPrivateShop():
+			chat.AppendChat(chat.CHAT_TYPE_INFO, localeInfo.USE_ITEM_FAILURE_PRIVATE_SHOP)
+			return
+
+		if (uiOfflineShopBuilder.IsBuildingOfflineShop()):
+			chat.AppendChat(chat.CHAT_TYPE_INFO, localeInfo.USE_ITEM_FAILURE_OFFLINE_SHOP)
+			return
+			
+
+		net.SendItemUseToItemPacket(srcSlotPos, dstSlotPos)
+
+	def __SendUseItemPacket(self, slotPos):
+		# 개인상점 열고 있는 동안 아이템 사용 방지
+		if uiPrivateShopBuilder.IsBuildingPrivateShop():
+			chat.AppendChat(chat.CHAT_TYPE_INFO, localeInfo.USE_ITEM_FAILURE_PRIVATE_SHOP)
+			return
+
+		if (uiOfflineShopBuilder.IsBuildingOfflineShop()):
+			chat.AppendChat(chat.CHAT_TYPE_INFO, localeInfo.USE_ITEM_FAILURE_OFFLINE_SHOP)
+			return
+			
+
+		itemb = player.GetItemIndex(slotPos)
+		if app.LWT_BUFF_UPDATE:	
+			if constInfo.IS_BUFFI(itemb) and player.GetStatus(player.LEVEL) < 5:
+				popup = uiCommon.PopupDialog()
+				popup.SetText(translate.buffilevel)
+				popup.SetAcceptEvent(self.__OnClosePopupDialog)
+				popup.Open()
+				self.popup = popup
+				return
+		net.SendItemUsePacket(slotPos)
+	def kkkd(self, l):
+		self.sorusoruyoz.Close()
+	def sorgula(self, pos):
+		self.sorusoruyoz.Close()
+		net.SendItemUsePacket(pos)
+		
+	def __SendUseItemAllPacket(self, slotPos):
+		# 개인상점 열고 있는 동안 아이템 사용 방지
+		if uiPrivateShopBuilder.IsBuildingPrivateShop():
+			chat.AppendChat(chat.CHAT_TYPE_INFO, localeInfo.USE_ITEM_FAILURE_PRIVATE_SHOP)
+			return
+
+		if (uiOfflineShopBuilder.IsBuildingOfflineShop()):
+			chat.AppendChat(chat.CHAT_TYPE_INFO, localeInfo.USE_ITEM_FAILURE_OFFLINE_SHOP)
+			return
+			
+
+		net.SendItemUseAllPacket(slotPos)		
+	
+	def __SendMoveItemPacket(self, srcSlotPos, dstSlotPos, srcItemCount, gelenWindowType = -1, hedefWindowType = -1, topluAyrimMi = False):
+		# 개인상점 열고 있는 동안 아이템 사용 방지
+		if uiPrivateShopBuilder.IsBuildingPrivateShop():
+			chat.AppendChat(chat.CHAT_TYPE_INFO, localeInfo.MOVE_ITEM_FAILURE_PRIVATE_SHOP)
+			return
+
+		if (uiOfflineShopBuilder.IsBuildingOfflineShop()):
+			chat.AppendChat(chat.CHAT_TYPE_INFO, localeInfo.MOVE_ITEM_FAILURE_OFFLINE_SHOP)
+			return
+			
+
+			
+			
+		if topluAyrimMi:
+			hedefWindow=player.SlotTypeToInvenType(hedefWindowType)
+			gelenWindow=player.SlotTypeToInvenType(gelenWindowType)
+
+			sonCell = dstSlotPos + (player.GetItemCount(gelenWindow, srcSlotPos) / srcItemCount)
+			# chat.AppendChat(1,"Baslangic pos:%d bitis pos :%d" % (dstSlotPos,sonCell))
+			for i in range(dstSlotPos,sonCell):
+				try:
+					if (player.GetItemCount(hedefWindow, i) > 0):
+						chat.AppendChat(1,"Yolda item var..")
+						return
+				except: pass
+			self.islemYapiliyor = True
+			self.bolunecekSayi = srcItemCount
+			self.bolunenPos = srcSlotPos
+			self.baslangicPos = dstSlotPos
+			self.tasinanSayi = 0
+			self.islemTuru = 0
+			self.tasinacakSayi = sonCell - dstSlotPos
+			self.tasinanWindow = gelenWindow
+			self.tasinacakWindow = hedefWindow
+			self.islemBitisSuresi = int(round(time.time() * 1000)) + (self.tasinacakSayi * 200)
+			chat.AppendChat(1,"Biraz bekleyin. Islem toplamda %s ms surecektir. " % str(self.tasinacakSayi*200))
+		else:
+			net.SendItemMovePacket(srcSlotPos, dstSlotPos, srcItemCount)
+	
+	def SetDragonSoulRefineWindow(self, wndDragonSoulRefine):
+		if app.ENABLE_DRAGON_SOUL_SYSTEM:
+			self.wndDragonSoulRefine = wndDragonSoulRefine
+			
+	if app.ITEM_CHECKINOUT_UPDATE:
+		def SetSafeboxWindow(self, wndSafeBox):
+			self.wndSafeBox = wndSafeBox
+
+	def OpenRemoveItemWindow(self, wndPage):
+		self.KygnItemSil = wndPage
+			
+	def OnMoveWindow(self, x, y):
+#		print "Inventory Global Pos : ", self.GetGlobalPosition()
+		if self.wndBelt:
+#			print "Belt Global Pos : ", self.wndBelt.GetGlobalPosition()
+			self.wndBelt.AdjustPositionAndSize()
+		if self.wndMenu:
+#			print "Belt Global Pos : ", self.wndBelt.GetGlobalPosition()
+			self.wndMenu.AdjustPositionAndSize()						
+		if self.wndMenu:
+#			print "Belt Global Pos : ", self.wndBelt.GetGlobalPosition()
+			self.wndMenu.AdjustPositionAndSize()
+	if app.ENABLE_SASH_SYSTEM:
+		def SetSashWindow(self, wndSashCombine, wndSashAbsorption):
+			self.wndSashCombine = wndSashCombine
+			self.wndSashAbsorption = wndSashAbsorption
+
+		def isShowSashWindow(self):
+			if self.wndSashCombine:
+				if self.wndSashCombine.IsShow():
+					return 1
+
+			if self.wndSashAbsorption:
+				if self.wndSashAbsorption.IsShow():
+					return 1
+			
+			return 0	
+	if app.ENABLE_AURA_SYSTEM:
+		def SetAuraWindow(self, wndAuraAbsorption, wndAuraRefine):
+			self.wndAuraRefine = wndAuraRefine
+			self.wndAuraAbsorption = wndAuraAbsorption
+
+		def isShowAuraWindow(self):
+			if self.wndAuraRefine:
+				if self.wndAuraRefine.IsShow():
+					return 1
+
+			if self.wndAuraAbsorption:
+				if self.wndAuraAbsorption.IsShow():
+					return 1
+			
+			return 0
+	if app.ENABLE_CUBE_RENEWAL:
+		def SetCubeRenewalDlg(self, wndCubeRenewal):
+			self.wndCubeRenewal = wndCubeRenewal
+		
+		def isShowCubeRenewalDlg(self):
+			if self.wndCubeRenewal:
+				if self.wndCubeRenewal.IsShow():
+					return 1
+					
+			return 0
+
+	if app.ENABLE_NEW_PET_SYSTEM:
+		def SetPetFeedWindow(self, wndPetFeedWindow):
+			self.wndPetFeedWindow = wndPetFeedWindow
+
+		def isShowPetFeedWindow(self):
+			if self.wndPetFeedWindow:
+				if self.wndPetFeedWindow.IsShow():
+					return 1
+			return 0
+
+
+
+	def IsDlgQuestionShow(self):
+		if self.dlgQuestion and self.dlgQuestion.IsShow() or self.attachMetinDialog.IsShow():
+			return True
+
+		return False
+
+	def ExternQuestionDialog_Close(self):
+		if self.attachMetinDialog.IsShow():
+			self.attachMetinDialog.Close()
+		self.dlgQuestion.Close()
+		self.srcItemPos = (0, 0)
+		self.dstItemPos = (0, 0)
